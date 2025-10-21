@@ -5,7 +5,6 @@ Create a detailed `plan_testcase-demo.md` document that outlines the implementat
 
 ## Context Requirements
 The plan must:
-- Reference the established project structure from #file:structure.md
 - Use test cases from #file:testcase-demo.md as implementation targets
 - Assume the project is already initialized (skip setup instructions)
 - Account for line break characters (`</br>`) in test steps and expected results, treating each as separate actions/verifications

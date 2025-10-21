@@ -16,320 +16,325 @@
 ## 1. Overview
 
 ### Purpose
-This test plan provides a comprehensive roadmap for implementing automated Playwright test scripts for the Demoblaze e-commerce application (https://www.demoblaze.com/). The plan translates five manual test cases into structured, maintainable, and scalable automated tests following industry best practices and project conventions.
+This test plan provides a comprehensive blueprint for implementing Playwright test scripts based on existing test cases for the DemoBlaze e-commerce website (https://www.demoblaze.com/). The plan ensures consistent implementation adhering to project structure, conventions, and best practices.
 
 ### Features Being Tested
-Based on the sample test cases, the following features will be covered:
-- **User Authentication**: Login functionality with valid credentials
-- **Shopping Cart Management**: Adding multiple products, removing items, cart calculations
-- **Checkout Process**: Complete order placement with customer information
-- **Navigation Flows**: End-to-end shopping experience from login to logout
-- **Product Catalog**: Category browsing and product selection across Phones, Laptops, and Monitors
+The test suite covers critical e-commerce functionalities:
+- **Authentication**: User login with valid credentials
+- **Shopping Cart Management**: Adding multiple items from different categories, removing items
+- **Checkout Process**: Placing orders with valid payment information
+- **End-to-End Navigation**: Complete shopping flow from login through checkout to logout
 
-### Connection to Overall Test Architecture
-This test plan aligns with the project's existing Playwright configuration:
-- Tests will reside in the `/tests` directory as configured in `playwright.config.ts`
-- Follows the page object model pattern for maintainability
-- Utilizes TypeScript for type safety and better IDE support
-- Implements soft assertions for comprehensive reporting
-- Separates concerns: locators, page objects, test data, and test scripts
+### Architecture Connection
+This plan integrates with the existing project structure:
+- **Pages**: Reusable page object classes for UI interactions
+- **Locators**: Centralized selector definitions extending from common base
+- **Utilities**: Shared helper functions for common operations
+- **Interfaces**: Type definitions for test data structures
+- **Data**: Test data management and fixtures
+- **Constants**: Configuration values and reusable strings
 
 ### Key Dependencies and Assumptions
-**Dependencies:**
-- Playwright Test framework (@playwright/test v1.56.1+)
-- Node.js with TypeScript support
-- Access to https://www.demoblaze.com/ (external dependency)
-- Valid test user accounts pre-created on the platform
-
-**Assumptions:**
-- Project is already initialized with Playwright configuration
-- Test environment is stable and accessible
-- No API mocking required - tests will interact with real application
-- Browser drivers are properly installed
-- Test data (user accounts) exist and are valid
-- Application behavior matches the documented test cases
+- **Project is already initialized** with Playwright, TypeScript, and necessary dependencies
+- **Target application**: https://www.demoblaze.com/ is accessible
+- **Test user account exists**: Username/Password = "autouser_20251005_1234"
+- **Browser context**: Tests assume clean state (can use fixtures for logged-in state)
+- **No API mocking required**: Tests interact with live application
+- **Line breaks (`</br>`)** in test steps represent separate actions/verifications
 
 ---
 
 ## 2. Test Cases Analysis
 
-### Total Number of Test Cases
-**5 test cases** covering critical user journeys:
-
-| Test ID | Feature Area | Test Type | Complexity |
-|---------|-------------|-----------|------------|
-| TC-1 | Login | Functional | Low |
-| TC-2 | Cart | Functional | Medium |
-| TC-3 | Checkout | End-to-End | Medium |
-| TC-4 | Cart | Functional | Low |
-| TC-5 | Navigation | End-to-End | High |
+### Summary Statistics
+- **Total Test Cases**: 5
+- **Test Categories**:
+  - Login: 1 test case
+  - Cart Management: 2 test cases (Add Multiple, Remove Item)
+  - Checkout: 1 test case
+  - End-to-End Flow: 1 test case
 
 ### Common Patterns Across Test Cases
 
-1. **Login Flow**
-   - Used as precondition in TC-2, TC-3, TC-4, TC-5
-   - Pattern: Navigate → Click Login → Enter credentials → Submit → Verify
+#### Pattern 1: User Authentication
+- **Occurrences**: TC1, TC5
+- **Flow**: Navigate → Open Login Modal → Enter Credentials → Submit → Verify Welcome Message
+- **Reusable Component**: `login()` method in LoginPage
 
-2. **Product Selection**
-   - Used in TC-2, TC-5
-   - Pattern: Select category → Click product → Add to cart → Handle alert → Navigate back
+#### Pattern 2: Product Selection and Cart Addition
+- **Occurrences**: TC2, TC4, TC5
+- **Flow**: Select Category → Click Product → Add to Cart → Accept Alert → Navigate
+- **Reusable Component**: `addProductToCart(category, productName)` method
 
-3. **Cart Verification**
-   - Used in TC-2, TC-3, TC-4, TC-5
-   - Pattern: Navigate to Cart → Verify items → Check prices → Validate total
+#### Pattern 3: Cart Verification
+- **Occurrences**: TC2, TC3, TC4, TC5
+- **Flow**: Navigate to Cart → Verify Products Present → Verify Prices → Verify Total
+- **Reusable Component**: `verifyCartContents(expectedProducts[])` method
 
-4. **Checkout Flow**
-   - Used in TC-3, TC-5
-   - Pattern: Place Order → Fill form → Purchase → Confirm → Verify redirect
-
-5. **Alert Handling**
-   - Used in TC-2, TC-5
-   - Pattern: Trigger action → Accept browser alert dialog
+#### Pattern 4: Checkout Process
+- **Occurrences**: TC3, TC5
+- **Flow**: Place Order → Fill Form → Purchase → Verify Confirmation → Close Modal
+- **Reusable Component**: `completeCheckout(customerInfo)` method
 
 ### Unique Challenges
 
-1. **Test Case 1 (Login)**
-   - **Challenge**: Modal dialog interaction with dynamic state changes
-   - **Consideration**: Need to verify navbar updates (Welcome message, button visibility changes)
+| Challenge | Test Case | Description | Solution Approach |
+|-----------|-----------|-------------|-------------------|
+| Alert Handling | TC2, TC3, TC5 | Browser alerts after adding to cart | Implement alert listener in page object |
+| Dynamic Total Calculation | TC2, TC4 | Total must match sum of product prices | Create verification utility for numerical assertions |
+| Cart State Management | TC3, TC4 | Cart must persist/clear appropriately | Use fixtures for pre-cart state, verify cleanup |
+| Multi-step Navigation | TC5 | Complex flow across multiple pages | Implement chaining pattern in page objects |
+| Modal State Detection | TC1, TC3 | Verify modal opens/closes correctly | Add waitForModal utility methods |
 
-2. **Test Case 2 (Add Multiple Items)**
-   - **Challenge**: Cross-category product selection with multiple navigation steps
-   - **Consideration**: State management across page transitions, alert handling between actions
+### Required Test Data
 
-3. **Test Case 3 (Checkout)**
-   - **Challenge**: Multi-step form submission with popup confirmation
-   - **Consideration**: Extracting and validating dynamic order ID and amount, cart cleanup verification
+```typescript
+// Login Credentials
+{
+  username: "autouser_20251005_1234",
+  password: "autouser_20251005_1234"
+}
 
-4. **Test Case 4 (Remove Item)**
-   - **Challenge**: Dynamic cart updates and recalculation
-   - **Consideration**: Ensuring UI updates reflect backend state changes immediately
+// Product Information
+Products = [
+  { name: "Samsung galaxy s6", category: "Phones", price: 360 },
+  { name: "MacBook Pro", category: "Laptops", price: 1100 },
+  { name: "Sony xperia z5", category: "Phones", price: 320 },
+  { name: "MacBook Air", category: "Laptops", price: 700 },
+  { name: "Sony vaio i5", category: "Laptops", price: 790 },
+  { name: "Apple monitor 24", category: "Monitors", price: 400 }
+]
 
-5. **Test Case 5 (Full Flow)**
-   - **Challenge**: Longest test with most dependencies and state changes
-   - **Consideration**: Test data cleanup, logout verification, maintaining state through entire flow
+// Checkout Information
+CustomerInfo = [
+  { name: "John Doe", country: "USA", city: "New York", card: "4111111111111111", month: "12", year: "2025" },
+  { name: "Anna", country: "VN", city: "HCM", card: "12345678", month: "01", year: "2026" }
+]
+```
 
-### Required Test Data and Preconditions
-
-| Test Case | Preconditions | Required Data |
-|-----------|--------------|---------------|
-| TC-1 | Access to application | Valid username/password |
-| TC-2 | User logged in | Product names: "Samsung galaxy s6", "MacBook Pro" |
-| TC-3 | User logged in, cart has items | Customer info: Name, Country, City, Credit Card, Month, Year |
-| TC-4 | User logged in, 2 items in cart | Product names: "Sony xperia z5", "MacBook Air" |
-| TC-5 | Valid user account exists | Products: "Sony vaio i5", "Apple monitor 24"; Customer info |
-
-### Identification of Page Objects Needed
-
-Based on test case analysis, the following page objects are required:
-
-1. **HomePage** - Landing page with product categories and navbar
-2. **LoginModal** - Modal dialog for user authentication
-3. **ProductDetailPage** - Individual product display with Add to Cart functionality
-4. **CartPage** - Shopping cart management interface
-5. **CheckoutModal** - Order placement form modal
-6. **ConfirmationModal** - Purchase confirmation dialog
-7. **CommonPage** (Base) - Shared utilities and common interactions
-
-**Locator Files Required:**
-- `common-locator.ts` (Base class)
-- `home-locator.ts`
-- `login-locator.ts`
-- `product-detail-locator.ts`
-- `cart-locator.ts`
-- `checkout-locator.ts`
-- `confirmation-locator.ts`
+### Required Page Objects
+1. **HomePage** - Navigation, category selection, product browsing
+2. **LoginPage** - Authentication modal interactions
+3. **ProductDetailPage** - Product viewing, add to cart actions
+4. **CartPage** - Cart management, item removal, checkout initiation
+5. **CheckoutPage** - Order form completion, purchase confirmation
 
 ---
 
 ## 3. Implementation Strategy
 
-### File Organization Within Test Directory
+### File Organization
 
 ```
-tests/
-├── demoblaze/
-│   ├── login.spec.ts              # TC-1: Login tests
-│   ├── cart.spec.ts               # TC-2, TC-4: Cart operations
-│   ├── checkout.spec.ts           # TC-3: Checkout process
-│   └── full-flow.spec.ts          # TC-5: End-to-end flow
+d:\QC_training\W6\
+├── tests/
+│   ├── login.spec.ts              # TC1: Login tests
+│   ├── cart.spec.ts               # TC2, TC4: Cart management tests
+│   ├── checkout.spec.ts           # TC3: Checkout tests
+│   └── navigation.spec.ts         # TC5: End-to-end flow tests
 ├── pages/
-│   ├── common-page.ts             # Base page with shared utilities
-│   ├── home-page.ts
-│   ├── login-modal.ts
-│   ├── product-detail-page.ts
-│   ├── cart-page.ts
-│   ├── checkout-modal.ts
-│   └── confirmation-modal.ts
+│   ├── common-page.ts             # Base page with common utilities
+│   ├── home-page.ts               # HomePage class
+│   ├── login-page.ts              # LoginPage class
+│   ├── product-detail-page.ts    # ProductDetailPage class
+│   ├── cart-page.ts               # CartPage class
+│   └── checkout-page.ts           # CheckoutPage class
 ├── locators/
-│   ├── common-locator.ts          # Base locator class
-│   ├── home-locator.ts
-│   ├── login-locator.ts
-│   ├── product-detail-locator.ts
-│   ├── cart-locator.ts
-│   ├── checkout-locator.ts
-│   └── confirmation-locator.ts
-├── fixtures/
-│   └── demoblaze-fixtures.ts      # Custom fixtures for authenticated state
+│   ├── common-locators.ts         # Base locator class
+│   ├── home-locators.ts           # Home page selectors
+│   ├── login-locators.ts          # Login modal selectors
+│   ├── product-detail-locators.ts # Product page selectors
+│   ├── cart-locators.ts           # Cart page selectors
+│   └── checkout-locators.ts       # Checkout modal selectors
+├── interfaces/
+│   ├── login-credentials.ts       # Login data interface
+│   ├── product-info.ts            # Product data interface
+│   ├── checkout-info.ts           # Checkout form data interface
+│   └── order-confirmation.ts      # Order result interface
+├── data/
+│   ├── users.ts                   # User credentials
+│   ├── products.ts                # Product catalog
+│   └── checkout-data.ts           # Checkout form data
 ├── utils/
-│   ├── test-data-generator.ts     # Dynamic test data creation
-│   ├── alert-handler.ts           # Browser alert management
-│   └── wait-helpers.ts            # Custom wait utilities
-└── types/
-    ├── user.interface.ts          # User account data interface
-    ├── product.interface.ts       # Product data interface
-    └── checkout.interface.ts      # Checkout form data interface
+│   ├── alert-handler.ts           # Alert/dialog utilities
+│   ├── wait-helpers.ts            # Synchronization utilities
+│   └── assertion-helpers.ts       # Soft assertion wrappers
+└── constants/
+    ├── urls.ts                    # Application URLs
+    └── messages.ts                # Expected text messages
 ```
 
 ### Naming Conventions
 
-**Test Files:**
-- Format: `<feature-area>.spec.ts`
-- Examples: `login.spec.ts`, `cart.spec.ts`, `checkout.spec.ts`
-- Use kebab-case for multi-word features
+#### Test Files
+- **Format**: `[feature].spec.ts`
+- **Examples**: `login.spec.ts`, `cart.spec.ts`, `checkout.spec.ts`
+- **Location**: `tests/` directory
 
-**Test Functions:**
-- Format: Descriptive sentence starting with verb
-- Examples: 
-  - `test('should login successfully with valid credentials')`
-  - `test('should add multiple items from different categories to cart')`
-  - `test('should update cart total when removing an item')`
+#### Test Functions
+- **Format**: `test('should [action/expected behavior]', async ({ page }) => { })`
+- **Examples**:
+  ```typescript
+  test('should login successfully with valid credentials', ...)
+  test('should add multiple products from different categories to cart', ...)
+  test('should complete checkout with valid customer information', ...)
+  ```
 
-**Page Object Classes:**
-- Format: PascalCase with "Page" or "Modal" suffix
-- Examples: `HomePage`, `LoginModal`, `CartPage`
+#### Page Object Classes
+- **Format**: `[Feature]Page` (PascalCase)
+- **Examples**: `HomePage`, `LoginPage`, `CartPage`
+- **Location**: `pages/` directory
 
-**Locator Classes:**
-- Format: PascalCase with "Locator" suffix
-- Examples: `HomeLocator`, `LoginLocator`, `CartLocator`
+#### Page Object Methods
+- **Format**: `[verb][Object][Details]` (camelCase)
+- **Business-level methods** (high-level flows):
+  ```typescript
+  loginWithValidAccount(username, password)
+  addProductToCart(category, productName)
+  completeCheckout(customerInfo)
+  verifyWelcomeMessage(username)
+  ```
+- **Avoid low-level methods** like `clickLoginButton()`, `fillUsername()` - use common utilities instead
 
-**Methods:**
-- Format: camelCase, action-oriented
-- Examples: `loginWithCredentials()`, `addProductToCart()`, `verifyCartTotal()`
+#### Locator Files
+- **Format**: `[feature]-locators.ts` (kebab-case)
+- **Examples**: `login-locators.ts`, `cart-locators.ts`
+- **Location**: `locators/` directory
+
+#### Locator Classes
+- **Format**: `[Feature]Locators extends CommonLocators`
+- **Examples**: `LoginLocators`, `HomeLocators`
 
 ### Page Object Organization
 
-**Inheritance Structure:**
-```
-CommonPage (base class with shared utilities)
-├── HomePage
-├── ProductDetailPage
-└── CartPage
-
-LoginModal (extends CommonPage)
-CheckoutModal (extends CommonPage)
-ConfirmationModal (extends CommonPage)
-```
-
-**Key Principles:**
-- Each page object corresponds to a distinct UI state or modal
-- Page objects contain business logic methods, not low-level actions
-- Locators are imported from separate locator classes
-- Navigation methods return new page object instances
-- Assertions are kept in test files, not page objects
-
-### Locator Organization
-
-**Base Locator Class Structure:**
+**Base Class: CommonPage**
 ```typescript
-// common-locator.ts
-export class CommonLocator {
-  protected page: Page;
+// pages/common-page.ts
+export class CommonPage {
+  constructor(protected page: Page, protected locators: CommonLocators) {}
   
-  // Common selectors
-  public navbar = {
-    home: '[PLACEHOLDER]',
-    cart: '[PLACEHOLDER]',
-    login: '[PLACEHOLDER]',
-    logout: '[PLACEHOLDER]',
-    welcomeMessage: '[PLACEHOLDER]'
-  };
-  
-  protected initializeLocators(): void {
-    // Base initialization logic
-  }
+  // Generic reusable methods
+  async clickElement(selector: string): Promise<void>
+  async fillInput(selector: string, value: string): Promise<void>
+  async waitForElement(selector: string): Promise<void>
+  async getText(selector: string): Promise<string>
+  async isVisible(selector: string): Promise<boolean>
+  async acceptAlert(): Promise<void>
+  async navigateTo(url: string): Promise<void>
 }
 ```
 
-**Page-Specific Locator Extension:**
+**Feature Pages extend CommonPage**
 ```typescript
-// home-locator.ts
-export class HomeLocator extends CommonLocator {
-  public categories = {
-    phones: '[PLACEHOLDER]',
-    laptops: '[PLACEHOLDER]',
-    monitors: '[PLACEHOLDER]'
-  };
+// pages/login-page.ts
+export class LoginPage extends CommonPage {
+  constructor(page: Page) {
+    super(page, new LoginLocators(page));
+  }
   
-  public products = {
-    byName: (productName: string) => `[PLACEHOLDER]`
-  };
+  // Business-level methods only
+  async loginWithValidAccount(credentials: LoginCredentials): Promise<void>
+  async openLoginModal(): Promise<void>
+  async verifyLoginSuccess(username: string): Promise<void>
+}
+```
+
+### Locator Organization
+
+**Base Class: CommonLocators**
+```typescript
+// locators/common-locators.ts
+export class CommonLocators {
+  constructor(protected page: Page) {
+    this.initializeLocators();
+  }
   
+  protected initializeLocators(): void {
+    // Common selectors used across multiple pages
+  }
+  
+  // Common locators
+  navbarHome: string = 'PLACEHOLDER_NAVBAR_HOME';
+  navbarCart: string = 'PLACEHOLDER_NAVBAR_CART';
+  navbarLogin: string = 'PLACEHOLDER_NAVBAR_LOGIN';
+  navbarLogout: string = 'PLACEHOLDER_NAVBAR_LOGOUT';
+  welcomeMessage: string = 'PLACEHOLDER_WELCOME_MESSAGE';
+}
+```
+
+**Feature Locators extend CommonLocators**
+```typescript
+// locators/login-locators.ts
+export class LoginLocators extends CommonLocators {
   constructor(page: Page) {
     super(page);
     this.initializeLocators();
   }
+  
+  protected initializeLocators(): void {
+    super.initializeLocators();
+    // Initialize login-specific locators
+  }
+  
+  // Login-specific locators
+  loginModal: string = 'PLACEHOLDER_LOGIN_MODAL';
+  usernameInput: string = 'PLACEHOLDER_USERNAME_INPUT';
+  passwordInput: string = 'PLACEHOLDER_PASSWORD_INPUT';
+  loginButton: string = 'PLACEHOLDER_LOGIN_BUTTON';
+  closeModalButton: string = 'PLACEHOLDER_CLOSE_MODAL';
 }
 ```
 
 ### Common Utilities Needed
 
-1. **AlertHandler** (`utils/alert-handler.ts`)
-   - `acceptAlert()` - Accept browser alert dialogs
-   - `dismissAlert()` - Dismiss browser alert dialogs
-   - `getAlertText()` - Capture alert message text
+#### Alert Handler (`utils/alert-handler.ts`)
+```typescript
+export class AlertHandler {
+  static async acceptAlert(page: Page): Promise<void>
+  static async dismissAlert(page: Page): Promise<void>
+  static async getAlertText(page: Page): Promise<string>
+  static async setupAlertListener(page: Page): Promise<void>
+}
+```
 
-2. **WaitHelpers** (`utils/wait-helpers.ts`)
-   - `waitForModalToAppear()` - Wait for modal visibility
-   - `waitForModalToDisappear()` - Wait for modal to close
-   - `waitForPageLoad()` - Wait for navigation completion
-   - `waitForElementStable()` - Wait for element animation to complete
+#### Wait Helpers (`utils/wait-helpers.ts`)
+```typescript
+export class WaitHelpers {
+  static async waitForNavigation(page: Page, url?: string): Promise<void>
+  static async waitForModalToOpen(page: Page, modalSelector: string): Promise<void>
+  static async waitForModalToClose(page: Page, modalSelector: string): Promise<void>
+  static async waitForElementToDisappear(page: Page, selector: string): Promise<void>
+}
+```
 
-3. **TestDataGenerator** (`utils/test-data-generator.ts`)
-   - `generateUsername()` - Create unique usernames with timestamp
-   - `generateCustomerInfo()` - Generate checkout form data
-   - `generateCreditCard()` - Create test credit card numbers
+#### Assertion Helpers (`utils/assertion-helpers.ts`)
+```typescript
+export class AssertionHelpers {
+  static async softAssertVisible(page: Page, selector: string, message?: string): Promise<void>
+  static async softAssertText(page: Page, selector: string, expectedText: string): Promise<void>
+  static async softAssertHidden(page: Page, selector: string, message?: string): Promise<void>
+  static async softAssertURL(page: Page, expectedURL: string): Promise<void>
+  static async softAssertSum(actual: number, expected: number, message?: string): Promise<void>
+}
+```
 
-4. **CommonPage Methods** (inherited by all page objects)
-   - `clickElement(locator)` - Wrapper for click with waiting
-   - `fillInput(locator, value)` - Fill text input with validation
-   - `isElementVisible(locator)` - Check element visibility
-   - `waitForNavigation()` - Handle navigation events
-   - `getElementText(locator)` - Extract text content
-
-### Test Data Management Approach
-
-**Static Test Data:**
-- Store in JSON files: `tests/data/users.json`, `tests/data/products.json`
-- Version controlled for consistency
-- Environment-specific overrides via `.env` files
-
-**Dynamic Test Data:**
-- Generated at runtime using `TestDataGenerator` utility
-- Timestamp-based for uniqueness
-- Avoid hardcoding in test files
-
-**Data Isolation:**
-- Each test should be independent
-- Use fixtures for setup/teardown
-- Clean up cart state after tests
-
-### Interface Definitions for Test Data
+### Interface Definitions
 
 ```typescript
-// types/user.interface.ts
-export interface User {
+// interfaces/login-credentials.ts
+export interface LoginCredentials {
   username: string;
   password: string;
 }
 
-// types/product.interface.ts
-export interface Product {
+// interfaces/product-info.ts
+export interface ProductInfo {
   name: string;
   category: 'Phones' | 'Laptops' | 'Monitors';
-  expectedPrice?: number;
+  price: number;
 }
 
-// types/checkout.interface.ts
+// interfaces/checkout-info.ts
 export interface CheckoutInfo {
   name: string;
   country: string;
@@ -339,1471 +344,1353 @@ export interface CheckoutInfo {
   year: string;
 }
 
-// types/cart-item.interface.ts
-export interface CartItem {
-  name: string;
-  price: number;
+// interfaces/order-confirmation.ts
+export interface OrderConfirmation {
+  orderId: string;
+  amount: number;
+  message: string;
 }
 ```
 
-### Handling Preconditions Efficiently
+### Preconditions Handling
 
-**Approach 1: Custom Fixtures**
+**Fixtures for Common Preconditions**
 ```typescript
-// fixtures/demoblaze-fixtures.ts
-export const test = base.extend<{ authenticatedPage: Page }>({
+// tests/fixtures/authenticated-user.ts
+export const authenticatedUser = base.extend({
   authenticatedPage: async ({ page }, use) => {
-    // Login logic
-    await page.goto('https://www.demoblaze.com/');
-    // ... login steps ...
+    const loginPage = new LoginPage(page);
+    await page.goto(BASE_URL);
+    await loginPage.loginWithValidAccount({ username: USER_1.username, password: USER_1.password });
     await use(page);
-    // Cleanup: logout
   }
 });
 ```
 
-**Approach 2: Setup Functions**
-- Create reusable setup functions in page objects
-- Call from `test.beforeEach()` hooks
-- Chain setup methods for complex preconditions
-
-**Approach 3: Test Data Fixtures**
-- Pre-seed test accounts
-- Use authentication tokens/cookies (if available)
-- Skip UI login when possible (future optimization)
+**Fixtures for Cart State**
+```typescript
+// tests/fixtures/cart-with-items.ts
+export const cartWithItems = authenticatedUser.extend({
+  cartWithProducts: async ({ authenticatedPage }, use) => {
+    const homePage = new HomePage(authenticatedPage);
+    await homePage.addProductToCart('Phones', 'Sony xperia z5');
+    await homePage.addProductToCart('Laptops', 'MacBook Air');
+    await use(authenticatedPage);
+  }
+});
+```
 
 ---
 
 ## 4. Page Objects Definition
 
-### 4.1 CommonPage (Base Class)
+### 4.1 LoginPage
 
-**Purpose:** Provide shared utilities and common interactions for all page objects
+**Purpose**: Handle user authentication through login modal
 
-**Locator File:** `common-locator.ts`
+**Locator File**: `login-locators.ts`
 
-**Methods:**
-- `clickElement(locator: string)` - Click element with wait for actionability
-- `fillInput(locator: string, value: string)` - Fill text input field
-- `isElementVisible(locator: string): Promise<boolean>` - Check visibility
-- `getElementText(locator: string): Promise<string>` - Extract text content
-- `waitForModalToOpen()` - Wait for modal dialog to appear
-- `waitForModalToClose()` - Wait for modal dialog to disappear
-- `waitForNavigation()` - Wait for page navigation to complete
-- `acceptAlert()` - Accept browser alert dialog
-
-**Locators (common-locator.ts):**
+**Class Definition**:
 ```typescript
-{
-  navbar: {
-    home: '[PLACEHOLDER]',
-    cart: '[PLACEHOLDER]',
-    login: '[PLACEHOLDER]',
-    logout: '[PLACEHOLDER]',
-    welcomeMessage: '[PLACEHOLDER]'
-  },
-  loadingIndicator: '[PLACEHOLDER]'
+export class LoginPage extends CommonPage {
+  constructor(page: Page) {
+    super(page, new LoginLocators(page));
+  }
 }
 ```
+
+**Essential Methods**:
+
+| Method | Parameters | Purpose | Returns/Navigation |
+|--------|-----------|---------|-------------------|
+| `openLoginModal()` | - | Opens the login modal dialog | Modal visible |
+| `loginWithValidAccount()` | `credentials: LoginCredentials` | Complete login flow: open modal → fill form → submit | HomePage (on success) |
+| `verifyLoginSuccess()` | `username: string` | Verify welcome message and UI state after login | Current page |
+| `verifyLogoutButtonVisible()` | - | Verify logout button is displayed | Current page |
+| `verifyLoginButtonHidden()` | - | Verify login button is hidden after login | Current page |
+
+**Locators Required** (from `LoginLocators`):
+```typescript
+loginModal: string = 'PLACEHOLDER_LOGIN_MODAL';
+usernameInput: string = 'PLACEHOLDER_USERNAME_INPUT';
+passwordInput: string = 'PLACEHOLDER_PASSWORD_INPUT';
+loginButton: string = 'PLACEHOLDER_LOGIN_BUTTON';
+closeModalButton: string = 'PLACEHOLDER_CLOSE_MODAL';
+welcomeMessage: string = 'PLACEHOLDER_WELCOME_MESSAGE'; // extends from CommonLocators
+navbarLogout: string = 'PLACEHOLDER_NAVBAR_LOGOUT'; // extends from CommonLocators
+navbarLogin: string = 'PLACEHOLDER_NAVBAR_LOGIN'; // extends from CommonLocators
+```
+
+**Navigation Patterns**:
+- **After `loginWithValidAccount()`**: User remains on HomePage, modal closes
+- **Expected URL**: Same as before login (typically `/` or `/index.html`)
+- **Assertions**: Welcome message visible, Logout button visible, Login button hidden
 
 ---
 
 ### 4.2 HomePage
 
-**Purpose:** Handle interactions with the main landing page, product categories, and navigation
+**Purpose**: Handle navigation, category selection, product browsing, and navbar interactions
 
-**Locator File:** `home-locator.ts` (extends `common-locator.ts`)
+**Locator File**: `home-locators.ts`
 
-**Methods:**
-- `navigateToHome()` - Navigate to homepage
-- `selectCategory(categoryName: string)` - Click on product category (Phones, Laptops, Monitors)
-- `selectProduct(productName: string): Promise<ProductDetailPage>` - Click on product, returns ProductDetailPage
-- `clickLoginButton()` - Open login modal
-- `clickCartButton(): Promise<CartPage>` - Navigate to cart page
-- `clickLogoutButton()` - Logout from application
-- `isUserLoggedIn(): Promise<boolean>` - Check if user is logged in
-- `getWelcomeMessage(): Promise<string>` - Get welcome text from navbar
-- `isLoginButtonVisible(): Promise<boolean>` - Check login button visibility
-- `isLogoutButtonVisible(): Promise<boolean>` - Check logout button visibility
-
-**Locators (home-locator.ts):**
+**Class Definition**:
 ```typescript
-{
-  // Inherits navbar from CommonLocator
-  categories: {
-    phones: '[PLACEHOLDER]',
-    laptops: '[PLACEHOLDER]',
-    monitors: '[PLACEHOLDER]'
-  },
-  productCard: {
-    byName: (name: string) => `[PLACEHOLDER]`
+export class HomePage extends CommonPage {
+  constructor(page: Page) {
+    super(page, new HomeLocators(page));
   }
 }
 ```
 
-**Navigation Patterns:**
-- After `selectProduct()` → `ProductDetailPage`
-- After `clickCartButton()` → `CartPage`
-- After `clickLoginButton()` → `LoginModal` appears
-- After `clickLogoutButton()` → Stays on `HomePage` (state changes)
+**Essential Methods**:
+
+| Method | Parameters | Purpose | Returns/Navigation |
+|--------|-----------|---------|-------------------|
+| `selectCategory()` | `categoryName: string` | Click on a product category (Phones/Laptops/Monitors) | Filtered product list |
+| `selectProduct()` | `productName: string` | Click on a specific product card | ProductDetailPage |
+| `navigateToCart()` | - | Click Cart link in navbar | CartPage |
+| `navigateToHome()` | - | Click Home link in navbar | HomePage (refresh) |
+| `clickLogout()` | - | Click Logout button in navbar | HomePage (logged out state) |
+| `verifyWelcomeMessage()` | `username: string` | Verify welcome message displays correct username | Current page |
+
+**Locators Required** (from `HomeLocators`):
+```typescript
+// Categories
+categoryPhones: string = 'PLACEHOLDER_CATEGORY_PHONES';
+categoryLaptops: string = 'PLACEHOLDER_CATEGORY_LAPTOPS';
+categoryMonitors: string = 'PLACEHOLDER_CATEGORY_MONITORS';
+
+// Products (dynamic selector with product name)
+productCard: (productName: string) => string = (name) => `PLACEHOLDER_PRODUCT_CARD_${name}`;
+
+// Navbar (extends from CommonLocators)
+navbarHome: string = 'PLACEHOLDER_NAVBAR_HOME';
+navbarCart: string = 'PLACEHOLDER_NAVBAR_CART';
+navbarLogout: string = 'PLACEHOLDER_NAVBAR_LOGOUT';
+welcomeMessage: string = 'PLACEHOLDER_WELCOME_MESSAGE';
+```
+
+**Navigation Patterns**:
+- **After `selectCategory()`**: User remains on HomePage, product list updates
+- **After `selectProduct()`**: Navigate to ProductDetailPage (URL: `/prod.html?idp_={productId}`)
+- **After `navigateToCart()`**: Navigate to CartPage (URL: `/cart.html`)
+- **After `clickLogout()`**: User remains on HomePage, navbar updates to logged-out state
 
 ---
 
-### 4.3 LoginModal
+### 4.3 ProductDetailPage
 
-**Purpose:** Handle user authentication through the login modal dialog
+**Purpose**: Display product details and handle adding products to cart
 
-**Locator File:** `login-locator.ts` (extends `common-locator.ts`)
+**Locator File**: `product-detail-locators.ts`
 
-**Methods:**
-- `fillUsername(username: string)` - Enter username in input field
-- `fillPassword(password: string)` - Enter password in input field
-- `clickLoginButton()` - Submit login form
-- `loginWithCredentials(user: User)` - Complete login flow (fill + submit)
-- `isModalVisible(): Promise<boolean>` - Check if login modal is displayed
-- `waitForModalToClose()` - Wait for modal to disappear after successful login
-
-**Locators (login-locator.ts):**
+**Class Definition**:
 ```typescript
-{
-  modal: '[PLACEHOLDER]',
-  usernameInput: '[PLACEHOLDER]',
-  passwordInput: '[PLACEHOLDER]',
-  loginButton: '[PLACEHOLDER]',
-  closeButton: '[PLACEHOLDER]'
+export class ProductDetailPage extends CommonPage {
+  constructor(page: Page) {
+    super(page, new ProductDetailLocators(page));
+  }
 }
 ```
 
-**Navigation Patterns:**
-- After successful `loginWithCredentials()` → Modal closes, stays on `HomePage` with updated state
-- After `clickLoginButton()` → Modal closes if credentials valid
+**Essential Methods**:
+
+| Method | Parameters | Purpose | Returns/Navigation |
+|--------|-----------|---------|-------------------|
+| `addToCart()` | - | Click "Add to cart" button and accept alert | Current page |
+| `verifyProductName()` | `expectedName: string` | Verify product name is displayed correctly | Current page |
+| `verifyProductPrice()` | `expectedPrice: number` | Verify product price is displayed correctly | Current page |
+| `navigateBack()` | - | Navigate back to previous page (typically HomePage) | Previous page |
+
+**Locators Required** (from `ProductDetailLocators`):
+```typescript
+productName: string = 'PLACEHOLDER_PRODUCT_NAME';
+productPrice: string = 'PLACEHOLDER_PRODUCT_PRICE';
+productDescription: string = 'PLACEHOLDER_PRODUCT_DESCRIPTION';
+addToCartButton: string = 'PLACEHOLDER_ADD_TO_CART_BUTTON';
+```
+
+**Navigation Patterns**:
+- **After `addToCart()`**: User remains on ProductDetailPage, alert appears with "Product added"
+- **Alert handling**: Must accept alert after adding to cart
+- **Expected URL**: No change (`/prod.html?idp_={productId}`)
 
 ---
 
-### 4.4 ProductDetailPage
+### 4.4 CartPage
 
-**Purpose:** Manage interactions on individual product detail pages
+**Purpose**: Display cart contents, handle item removal, calculate totals, and initiate checkout
 
-**Locator File:** `product-detail-locator.ts` (extends `common-locator.ts`)
+**Locator File**: `cart-locators.ts`
 
-**Methods:**
-- `clickAddToCart()` - Add current product to cart
-- `addToCartAndAcceptAlert()` - Add product to cart and handle alert
-- `getProductName(): Promise<string>` - Get displayed product name
-- `getProductPrice(): Promise<number>` - Get displayed product price
-- `navigateToHome(): Promise<HomePage>` - Click Home link in navbar
-- `navigateToCart(): Promise<CartPage>` - Click Cart link in navbar
-
-**Locators (product-detail-locator.ts):**
+**Class Definition**:
 ```typescript
-{
-  productName: '[PLACEHOLDER]',
-  productPrice: '[PLACEHOLDER]',
-  addToCartButton: '[PLACEHOLDER]',
-  productDescription: '[PLACEHOLDER]'
+export class CartPage extends CommonPage {
+  constructor(page: Page) {
+    super(page, new CartLocators(page));
+  }
 }
 ```
 
-**Navigation Patterns:**
-- After `addToCartAndAcceptAlert()` → Alert appears and is accepted, stays on `ProductDetailPage`
-- After `navigateToHome()` → `HomePage`
-- After `navigateToCart()` → `CartPage`
+**Essential Methods**:
+
+| Method | Parameters | Purpose | Returns/Navigation |
+|--------|-----------|---------|-------------------|
+| `getCartItems()` | - | Retrieve list of all products in cart | Array of product names |
+| `verifyProductInCart()` | `productName: string` | Verify specific product is present in cart | Current page |
+| `verifyProductPrice()` | `productName: string, expectedPrice: number` | Verify product price is correct | Current page |
+| `removeProduct()` | `productName: string` | Click Delete button for specific product | Current page (cart updates) |
+| `getTotalPrice()` | - | Get the total price displayed | Number |
+| `verifyTotalPrice()` | `expectedTotal: number` | Verify total matches sum of products | Current page |
+| `clickPlaceOrder()` | - | Click "Place Order" button to open checkout modal | CheckoutPage modal opens |
+| `verifyCartEmpty()` | - | Verify cart contains no items | Current page |
+
+**Locators Required** (from `CartLocators`):
+```typescript
+cartTable: string = 'PLACEHOLDER_CART_TABLE';
+cartRow: string = 'PLACEHOLDER_CART_ROW';
+productNameInCart: (productName: string) => string = (name) => `PLACEHOLDER_PRODUCT_IN_CART_${name}`;
+productPriceInCart: (productName: string) => string = (name) => `PLACEHOLDER_PRICE_IN_CART_${name}`;
+deleteButton: (productName: string) => string = (name) => `PLACEHOLDER_DELETE_BUTTON_${name}`;
+totalPrice: string = 'PLACEHOLDER_TOTAL_PRICE';
+placeOrderButton: string = 'PLACEHOLDER_PLACE_ORDER_BUTTON';
+```
+
+**Navigation Patterns**:
+- **After `removeProduct()`**: User remains on CartPage, item removed from table, total updates
+- **After `clickPlaceOrder()`**: User remains on CartPage, checkout modal appears
+- **Expected URL**: `/cart.html`
 
 ---
 
-### 4.5 CartPage
+### 4.5 CheckoutPage
 
-**Purpose:** Manage shopping cart operations, item verification, and checkout initiation
+**Purpose**: Handle order form completion, purchase confirmation, and order verification
 
-**Locator File:** `cart-locator.ts` (extends `common-locator.ts`)
+**Locator File**: `checkout-locators.ts`
 
-**Methods:**
-- `getCartItems(): Promise<CartItem[]>` - Retrieve all items in cart with names and prices
-- `getCartTotal(): Promise<number>` - Get total price displayed in cart
-- `isProductInCart(productName: string): Promise<boolean>` - Check if specific product exists in cart
-- `removeProductFromCart(productName: string)` - Click delete button for specific product
-- `clickPlaceOrderButton()` - Open checkout modal
-- `getProductPrice(productName: string): Promise<number>` - Get price of specific product
-- `getProductCount(): Promise<number>` - Count number of items in cart
-- `isCartEmpty(): Promise<boolean>` - Check if cart has no items
-
-**Locators (cart-locator.ts):**
+**Class Definition**:
 ```typescript
-{
-  cartItems: '[PLACEHOLDER]',
-  productRow: {
-    byName: (name: string) => `[PLACEHOLDER]`
-  },
-  productName: '[PLACEHOLDER]',
-  productPrice: '[PLACEHOLDER]',
-  deleteButton: '[PLACEHOLDER]',
-  totalAmount: '[PLACEHOLDER]',
-  placeOrderButton: '[PLACEHOLDER]'
+export class CheckoutPage extends CommonPage {
+  constructor(page: Page) {
+    super(page, new CheckoutLocators(page));
+  }
 }
 ```
 
-**Navigation Patterns:**
-- After `clickPlaceOrderButton()` → `CheckoutModal` appears
-- After `removeProductFromCart()` → Stays on `CartPage`, cart updates dynamically
+**Essential Methods**:
+
+| Method | Parameters | Purpose | Returns/Navigation |
+|--------|-----------|---------|-------------------|
+| `fillCheckoutForm()` | `info: CheckoutInfo` | Fill all checkout form fields | Current page |
+| `clickPurchase()` | - | Click Purchase button to submit order | Confirmation modal appears |
+| `verifyConfirmationMessage()` | `expectedMessage: string` | Verify success message in confirmation popup | Current page |
+| `getOrderId()` | - | Extract order ID from confirmation | String |
+| `getOrderAmount()` | - | Extract order amount from confirmation | Number |
+| `closeConfirmation()` | - | Click OK button to close confirmation modal | HomePage |
+| `completeCheckout()` | `info: CheckoutInfo` | Complete full checkout flow: fill form → purchase → verify | HomePage (after confirmation) |
+
+**Locators Required** (from `CheckoutLocators`):
+```typescript
+// Checkout form
+checkoutModal: string = 'PLACEHOLDER_CHECKOUT_MODAL';
+nameInput: string = 'PLACEHOLDER_NAME_INPUT';
+countryInput: string = 'PLACEHOLDER_COUNTRY_INPUT';
+cityInput: string = 'PLACEHOLDER_CITY_INPUT';
+creditCardInput: string = 'PLACEHOLDER_CARD_INPUT';
+monthInput: string = 'PLACEHOLDER_MONTH_INPUT';
+yearInput: string = 'PLACEHOLDER_YEAR_INPUT';
+purchaseButton: string = 'PLACEHOLDER_PURCHASE_BUTTON';
+closeCheckoutButton: string = 'PLACEHOLDER_CLOSE_CHECKOUT';
+
+// Confirmation modal
+confirmationModal: string = 'PLACEHOLDER_CONFIRMATION_MODAL';
+confirmationMessage: string = 'PLACEHOLDER_CONFIRMATION_MESSAGE';
+orderIdText: string = 'PLACEHOLDER_ORDER_ID';
+amountText: string = 'PLACEHOLDER_AMOUNT';
+confirmOkButton: string = 'PLACEHOLDER_CONFIRM_OK';
+```
+
+**Navigation Patterns**:
+- **After `fillCheckoutForm()`**: User remains on CartPage, form is filled
+- **After `clickPurchase()`**: User remains on CartPage, confirmation modal appears
+- **After `closeConfirmation()`**: User redirected to HomePage, cart is cleared
+- **Expected URL after completion**: `/` or `/index.html`
 
 ---
 
-### 4.6 CheckoutModal
+### Locator Inheritance Structure
 
-**Purpose:** Handle order placement form submission
-
-**Locator File:** `checkout-locator.ts` (extends `common-locator.ts`)
-
-**Methods:**
-- `fillName(name: string)` - Enter customer name
-- `fillCountry(country: string)` - Enter country
-- `fillCity(city: string)` - Enter city
-- `fillCreditCard(cardNumber: string)` - Enter credit card number
-- `fillMonth(month: string)` - Enter expiration month
-- `fillYear(year: string)` - Enter expiration year
-- `fillCheckoutForm(checkoutInfo: CheckoutInfo)` - Fill all fields at once
-- `clickPurchaseButton()` - Submit order
-- `clickCloseButton()` - Close modal without purchasing
-- `isModalVisible(): Promise<boolean>` - Check if checkout modal is displayed
-
-**Locators (checkout-locator.ts):**
-```typescript
-{
-  modal: '[PLACEHOLDER]',
-  nameInput: '[PLACEHOLDER]',
-  countryInput: '[PLACEHOLDER]',
-  cityInput: '[PLACEHOLDER]',
-  creditCardInput: '[PLACEHOLDER]',
-  monthInput: '[PLACEHOLDER]',
-  yearInput: '[PLACEHOLDER]',
-  purchaseButton: '[PLACEHOLDER]',
-  closeButton: '[PLACEHOLDER]'
-}
 ```
+CommonLocators (base class)
+├── initializeLocators()
+├── navbarHome
+├── navbarCart
+├── navbarLogin
+├── navbarLogout
+└── welcomeMessage
 
-**Navigation Patterns:**
-- After `clickPurchaseButton()` → Checkout modal closes, `ConfirmationModal` appears
-- After `clickCloseButton()` → Modal closes, stays on `CartPage`
+↓ extends
 
----
+HomeLocators
+├── inherits all CommonLocators
+├── categoryPhones
+├── categoryLaptops
+├── categoryMonitors
+└── productCard(name)
 
-### 4.7 ConfirmationModal
+LoginLocators
+├── inherits all CommonLocators
+├── loginModal
+├── usernameInput
+├── passwordInput
+└── loginButton
 
-**Purpose:** Handle purchase confirmation dialog and order details extraction
+ProductDetailLocators
+├── inherits all CommonLocators
+├── productName
+├── productPrice
+└── addToCartButton
 
-**Locator File:** `confirmation-locator.ts` (extends `common-locator.ts`)
+CartLocators
+├── inherits all CommonLocators
+├── cartTable
+├── productNameInCart(name)
+├── deleteButton(name)
+├── totalPrice
+└── placeOrderButton
 
-**Methods:**
-- `isModalVisible(): Promise<boolean>` - Check if confirmation modal is displayed
-- `getConfirmationMessage(): Promise<string>` - Get "Thank you for your purchase!" text
-- `getOrderId(): Promise<string>` - Extract order ID from confirmation
-- `getOrderAmount(): Promise<number>` - Extract order amount from confirmation
-- `clickOkButton(): Promise<HomePage>` - Close modal and return to homepage
-- `getFullConfirmationText(): Promise<string>` - Get entire confirmation message
-
-**Locators (confirmation-locator.ts):**
-```typescript
-{
-  modal: '[PLACEHOLDER]',
-  confirmationMessage: '[PLACEHOLDER]',
-  orderDetails: '[PLACEHOLDER]',
-  okButton: '[PLACEHOLDER]'
-}
+CheckoutLocators
+├── inherits all CommonLocators
+├── checkoutModal
+├── nameInput, countryInput, cityInput
+├── creditCardInput, monthInput, yearInput
+├── purchaseButton
+├── confirmationModal
+└── confirmOkButton
 ```
-
-**Navigation Patterns:**
-- After `clickOkButton()` → Modal closes, redirects to `HomePage`
-- Cart is cleared after successful purchase
 
 ---
 
 ## 5. Test Script Mapping
 
-### Detailed Test Case to Implementation Mapping
+### Mapping Table
 
-| Test Case ID | Test File | Test Function Name | Page Objects Required | Fixtures Needed | Special Handling |
-|--------------|-----------|-------------------|----------------------|-----------------|------------------|
-| TC-1 | `login.spec.ts` | `should login successfully with valid credentials` | HomePage, LoginModal | None | Modal wait, navbar state verification |
-| TC-2 | `cart.spec.ts` | `should add multiple items from different categories to cart` | HomePage, ProductDetailPage, CartPage | authenticatedUser | Alert handling (2x), cross-category navigation |
-| TC-3 | `checkout.spec.ts` | `should place order with valid customer information` | CartPage, CheckoutModal, ConfirmationModal, HomePage | authenticatedUser, cartWithItems | Dynamic order ID/amount extraction, cart cleanup verification |
-| TC-4 | `cart.spec.ts` | `should remove item and update cart total correctly` | HomePage, ProductDetailPage, CartPage | authenticatedUser, cartWith2Items | Dynamic total recalculation, item removal verification |
-| TC-5 | `full-flow.spec.ts` | `should complete full shopping flow from login to logout` | All page objects | None (login in test) | Longest test, multiple alerts, full state management, logout verification |
+| Test Case ID | Item Main | Item Sub | Test File | Test Function Name | Page Objects Required | Fixtures Needed | Special Handling |
+|--------------|-----------|----------|-----------|-------------------|----------------------|-----------------|------------------|
+| TC1 | Login | Valid Login | `login.spec.ts` | `should login successfully with valid credentials` | LoginPage, HomePage | None | None |
+| TC2 | Cart | Add Multiple Items | `cart.spec.ts` | `should add multiple products from different categories to cart` | HomePage, ProductDetailPage, CartPage | `authenticatedUser` | Alert handling after each add to cart |
+| TC3 | Checkout | Place Order with Valid Info | `checkout.spec.ts` | `should complete checkout with valid customer information` | CartPage, CheckoutPage, HomePage | `authenticatedUser`, `cartWithItems` | Modal handling, order confirmation verification |
+| TC4 | Cart | Remove Item | `cart.spec.ts` | `should remove single item and update cart total` | HomePage, ProductDetailPage, CartPage | `authenticatedUser` | Dynamic total calculation verification |
+| TC5 | Navigation | Full Shopping Flow | `navigation.spec.ts` | `should complete full shopping flow from login to logout` | LoginPage, HomePage, ProductDetailPage, CartPage, CheckoutPage | None | Multi-page navigation, complete flow testing |
 
-### Test File Structure Details
+---
 
-#### File: `tests/demoblaze/login.spec.ts`
+### Detailed Test Function Signatures
+
+#### TC1: Login Test
 ```typescript
-// Test Case: TC-1
-test.describe('User Authentication', () => {
+// tests/login.spec.ts
+import { test, expect } from '@playwright/test';
+import { LoginPage } from '../pages/login-page';
+import { HomePage } from '../pages/home-page';
+import { VALID_USER } from '../data/users';
+
+test.describe('Login Functionality', () => {
   test('should login successfully with valid credentials', async ({ page }) => {
-    // Steps:
-    // 1. Navigate to homepage
-    // 2. Click Login button
-    // 3. Fill username
-    // 4. Fill password
-    // 5. Click login button
-    // Verifications:
-    // - Modal closes
-    // - Welcome message displays with username
-    // - Logout button is visible
-    // - Login button is hidden
+    // Test implementation here
+    // Page objects: LoginPage, HomePage
+    // Verifications: Modal closes, welcome message, logout visible, login hidden
   });
 });
 ```
 
-#### File: `tests/demoblaze/cart.spec.ts`
+#### TC2 & TC4: Cart Tests
 ```typescript
-// Test Cases: TC-2, TC-4
+// tests/cart.spec.ts
+import { test, expect } from '@playwright/test';
+import { HomePage } from '../pages/home-page';
+import { ProductDetailPage } from '../pages/product-detail-page';
+import { CartPage } from '../pages/cart-page';
+import { authenticatedUser } from './fixtures/authenticated-user';
+
 test.describe('Shopping Cart Management', () => {
-  test('should add multiple items from different categories to cart', async ({ page }) => {
-    // Precondition: User logged in
-    // Steps involve multiple category selections and alert handling
+  test('should add multiple products from different categories to cart', async ({ page }) => {
+    // Uses authenticatedUser fixture
+    // Page objects: HomePage, ProductDetailPage, CartPage
+    // Special: Alert handling
   });
 
-  test('should remove item and update cart total correctly', async ({ page }) => {
-    // Precondition: User logged in, 2 items in cart
-    // Verify dynamic total recalculation
+  test('should remove single item and update cart total', async ({ page }) => {
+    // Uses authenticatedUser fixture
+    // Page objects: HomePage, ProductDetailPage, CartPage
+    // Special: Pre-add 2 products before removal
   });
 });
 ```
 
-#### File: `tests/demoblaze/checkout.spec.ts`
+#### TC3: Checkout Test
 ```typescript
-// Test Case: TC-3
+// tests/checkout.spec.ts
+import { test, expect } from '@playwright/test';
+import { CartPage } from '../pages/cart-page';
+import { CheckoutPage } from '../pages/checkout-page';
+import { HomePage } from '../pages/home-page';
+import { cartWithItems } from './fixtures/cart-with-items';
+import { CHECKOUT_DATA } from '../data/checkout-data';
+
 test.describe('Checkout Process', () => {
-  test('should place order with valid customer information', async ({ page }) => {
-    // Precondition: User logged in, items in cart
-    // Steps include form filling and confirmation handling
+  test('should complete checkout with valid customer information', async ({ page }) => {
+    // Uses cartWithItems fixture (includes authenticatedUser)
+    // Page objects: CartPage, CheckoutPage, HomePage
+    // Verifications: Confirmation modal, order ID, amount, redirect, cart cleared
   });
 });
 ```
 
-#### File: `tests/demoblaze/full-flow.spec.ts`
+#### TC5: Navigation Test
 ```typescript
-// Test Case: TC-5
+// tests/navigation.spec.ts
+import { test, expect } from '@playwright/test';
+import { LoginPage } from '../pages/login-page';
+import { HomePage } from '../pages/home-page';
+import { ProductDetailPage } from '../pages/product-detail-page';
+import { CartPage } from '../pages/cart-page';
+import { CheckoutPage } from '../pages/checkout-page';
+import { VALID_USER } from '../data/users';
+import { CHECKOUT_DATA } from '../data/checkout-data';
+
 test.describe('End-to-End Shopping Flow', () => {
   test('should complete full shopping flow from login to logout', async ({ page }) => {
-    // No preconditions - handles login within test
-    // Complete flow: login → browse → add items → checkout → logout
+    // No fixtures - tests complete flow from scratch
+    // Page objects: All 5 page objects
+    // Verifications: Each step of the flow
   });
 });
 ```
-
-### Fixture Requirements
-
-**1. authenticatedUser Fixture**
-```typescript
-// Purpose: Provide a logged-in user session
-// Used in: TC-2, TC-3, TC-4
-// Implementation: tests/fixtures/demoblaze-fixtures.ts
-```
-
-**2. cartWithItems Fixture**
-```typescript
-// Purpose: Provide a cart with at least one item
-// Used in: TC-3
-// Extends: authenticatedUser
-```
-
-**3. cartWith2Items Fixture**
-```typescript
-// Purpose: Provide a cart with exactly 2 specific items
-// Used in: TC-4
-// Extends: authenticatedUser
-// Items: "Sony xperia z5", "MacBook Air"
-```
-
-### Special Handling Requirements by Test Case
-
-**TC-1 (Login):**
-- Wait for modal to appear before interacting
-- Wait for modal to close after submission
-- Verify multiple navbar state changes simultaneously
-
-**TC-2 (Add Multiple Items):**
-- Handle alerts after each "Add to cart" action (2 total)
-- Navigate back to Home between category selections
-- Cross-category navigation requires page reloads
-
-**TC-3 (Checkout):**
-- Extract dynamic values (Order ID, Amount) from confirmation
-- Verify cart is empty after returning to homepage
-- Handle modal chaining (checkout → confirmation)
-
-**TC-4 (Remove Item):**
-- Verify cart state before and after removal
-- Validate total recalculation matches expected price
-- Ensure only one item is removed, not both
-
-**TC-5 (Full Flow):**
-- No fixtures - complete login within test
-- Multiple alert handlings throughout test
-- Verify logout returns to initial state (login button visible)
-- Longest test requiring careful state management
 
 ---
 
 ## 6. Test Data Management
 
-### Test Data Generation Strategy
+### Data Organization Strategy
 
-#### Static Test Data
-**Location:** `tests/data/` directory
+#### 6.1 Interface Definitions
 
-**users.json**
-```json
-{
-  "validUser": {
-    "username": "autouser_20251005_1234",
-    "password": "autouser_20251005_1234"
-  }
+**Location**: `interfaces/` directory
+
+```typescript
+// interfaces/login-credentials.ts
+export interface LoginCredentials {
+  username: string;
+  password: string;
+}
+
+// interfaces/product-info.ts
+export interface ProductInfo {
+  name: string;
+  category: 'Phones' | 'Laptops' | 'Monitors';
+  price: number;
+  description?: string;
+}
+
+// interfaces/checkout-info.ts
+export interface CheckoutInfo {
+  name: string;
+  country: string;
+  city: string;
+  creditCard: string;
+  month: string;
+  year: string;
+}
+
+// interfaces/order-confirmation.ts
+export interface OrderConfirmation {
+  orderId: string;
+  amount: number;
+  message: string;
+  success: boolean;
 }
 ```
 
-**products.json**
-```json
-{
-  "phones": [
-    { "name": "Samsung galaxy s6", "expectedPrice": 360 },
-    { "name": "Sony xperia z5", "expectedPrice": 320 }
-  ],
-  "laptops": [
-    { "name": "MacBook Pro", "expectedPrice": 1100 },
-    { "name": "Sony vaio i5", "expectedPrice": 790 },
-    { "name": "MacBook Air", "expectedPrice": 700 }
-  ],
-  "monitors": [
-    { "name": "Apple monitor 24", "expectedPrice": 400 }
-  ]
-}
-```
+#### 6.2 Test Data Files
 
-**checkout-info.json**
-```json
-{
-  "customer1": {
-    "name": "John Doe",
-    "country": "USA",
-    "city": "New York",
-    "creditCard": "4111111111111111",
-    "month": "12",
-    "year": "2025"
-  },
-  "customer2": {
-    "name": "Anna",
-    "country": "VN",
-    "city": "HCM",
-    "creditCard": "12345678",
-    "month": "01",
-    "year": "2026"
-  }
-}
-```
+**Location**: `data/` directory
 
-#### Dynamic Test Data Generation
-
-**Implementation:** `tests/utils/test-data-generator.ts`
-
-**Methods:**
-- `generateUsername(): string` - Creates username with timestamp pattern `autouser_YYYYMMDD_HHMM`
-- `generateCustomerInfo(): CheckoutInfo` - Creates random customer data
-- `generateCreditCardNumber(): string` - Creates valid test credit card number
-- `getRandomProduct(category: string): Product` - Selects random product from category
-
-**Usage Example:**
 ```typescript
-const username = TestDataGenerator.generateUsername();
-// Returns: "autouser_20251021_1430"
+// data/users.ts
+import { LoginCredentials } from '../interfaces/login-credentials';
 
-const customer = TestDataGenerator.generateCustomerInfo();
-// Returns: { name: "Test User 1430", country: "USA", ... }
-```
+export const VALID_USER: LoginCredentials = {
+  username: 'autouser_20251005_1234',
+  password: 'autouser_20251005_1234'
+};
 
-### Managing Test State Between Runs
-
-**Approach 1: Independent Test Execution**
-- Each test should be self-contained
-- Use `test.beforeEach()` to set up required state
-- Use `test.afterEach()` to clean up
-
-**Approach 2: Fixtures for Preconditions**
-- Custom fixtures handle authentication
-- Fixtures handle cart setup when needed
-- Automatic cleanup through fixture teardown
-
-**Approach 3: Test Isolation**
-- Avoid dependencies between tests
-- Each test starts from known state
-- No shared global state
-
-**State Management Pattern:**
-```typescript
-test.beforeEach(async ({ page }) => {
-  // Setup: Navigate to homepage
-  await page.goto('https://www.demoblaze.com/');
-});
-
-test.afterEach(async ({ page }) => {
-  // Cleanup: Clear any remaining state
-  // Logout if logged in
-  // Clear cart if needed
-});
-```
-
-### Handling Environmental Dependencies
-
-**Configuration Management:**
-- Use environment variables for base URL
-- Create `.env` file for local development
-- Use `.env.ci` for CI/CD pipelines
-
-**.env Structure:**
-```
-BASE_URL=https://www.demoblaze.com/
-TEST_USER_USERNAME=autouser_20251005_1234
-TEST_USER_PASSWORD=autouser_20251005_1234
-TIMEOUT_DEFAULT=30000
-RETRY_COUNT=2
-```
-
-**Accessing in Tests:**
-```typescript
-const baseURL = process.env.BASE_URL || 'https://www.demoblaze.com/';
-const testUser = {
-  username: process.env.TEST_USER_USERNAME,
-  password: process.env.TEST_USER_PASSWORD
+export const USERS = {
+  VALID_USER,
+  // Add more users as needed
 };
 ```
 
-**Playwright Config Integration:**
+```typescript
+// data/products.ts
+import { ProductInfo } from '../interfaces/product-info';
+
+export const PRODUCTS: { [key: string]: ProductInfo } = {
+  SAMSUNG_GALAXY_S6: {
+    name: 'Samsung galaxy s6',
+    category: 'Phones',
+    price: 360
+  },
+  MACBOOK_PRO: {
+    name: 'MacBook Pro',
+    category: 'Laptops',
+    price: 1100
+  },
+  SONY_XPERIA_Z5: {
+    name: 'Sony xperia z5',
+    category: 'Phones',
+    price: 320
+  },
+  MACBOOK_AIR: {
+    name: 'MacBook Air',
+    category: 'Laptops',
+    price: 700
+  },
+  SONY_VAIO_I5: {
+    name: 'Sony vaio i5',
+    category: 'Laptops',
+    price: 790
+  },
+  APPLE_MONITOR_24: {
+    name: 'Apple monitor 24',
+    category: 'Monitors',
+    price: 400
+  }
+};
+```
+
+```typescript
+// data/checkout-data.ts
+import { CheckoutInfo } from '../interfaces/checkout-info';
+
+export const CHECKOUT_DATA: { [key: string]: CheckoutInfo } = {
+  JOHN_DOE: {
+    name: 'John Doe',
+    country: 'USA',
+    city: 'New York',
+    creditCard: '4111111111111111',
+    month: '12',
+    year: '2025'
+  },
+  ANNA_VN: {
+    name: 'Anna',
+    country: 'VN',
+    city: 'HCM',
+    creditCard: '12345678',
+    month: '01',
+    year: '2026'
+  }
+};
+```
+
+#### 6.3 Constants
+
+**Location**: `constants/` directory
+
+```typescript
+// constants/urls.ts
+export const BASE_URL = 'https://www.demoblaze.com/';
+export const URLS = {
+  HOME: BASE_URL,
+  CART: `${BASE_URL}cart.html`,
+  PRODUCT_DETAIL: `${BASE_URL}prod.html`
+};
+```
+
+```typescript
+// constants/messages.ts
+export const MESSAGES = {
+  PRODUCT_ADDED: 'Product added',
+  CHECKOUT_SUCCESS: 'Thank you for your purchase!',
+  LOGIN_SUCCESS: 'Welcome',
+  LOGOUT_SUCCESS: 'Log out'
+};
+```
+
+### Test Data Generation
+
+For dynamic data that needs to be generated per test run:
+
+```typescript
+// utils/data-generator.ts
+export class DataGenerator {
+  static generateUniqueEmail(): string {
+    const timestamp = Date.now();
+    return `testuser_${timestamp}@example.com`;
+  }
+
+  static generateOrderId(): string {
+    return `ORD_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  }
+
+  static generateTimestamp(): string {
+    return new Date().toISOString();
+  }
+}
+```
+
+### Test State Management
+
+#### Between Test Runs
+- **Isolated Browser Context**: Each test gets fresh browser context by default
+- **Storage State**: Can save/load authentication state to avoid repeated logins
+- **Fixtures**: Use Playwright fixtures for setup/teardown
+
 ```typescript
 // playwright.config.ts
-use: {
-  baseURL: process.env.BASE_URL,
-  // ... other config
-}
+export default defineConfig({
+  use: {
+    // Start with clean state
+    storageState: undefined,
+    // Optional: save storage state after auth
+    // storageState: 'auth.json'
+  }
+});
+```
+
+#### Handling Environment Dependencies
+```typescript
+// constants/environment.ts
+export const ENV = {
+  BASE_URL: process.env.BASE_URL || 'https://www.demoblaze.com/',
+  TIMEOUT: parseInt(process.env.TIMEOUT || '30000'),
+  HEADLESS: process.env.HEADLESS !== 'false'
+};
 ```
 
 ### Cleanup Procedures
 
-**Test-Level Cleanup:**
-1. **After Login Tests:** Logout if logged in
-2. **After Cart Tests:** Clear cart or verify cart is empty
-3. **After Checkout Tests:** Verify order completion, cart cleared
-
-**Fixture-Level Cleanup:**
+#### After Each Test
 ```typescript
-export const test = base.extend({
-  authenticatedPage: async ({ page }, use) => {
-    // Setup: login
-    await use(page);
-    // Teardown: logout
-  }
+test.afterEach(async ({ page }) => {
+  // Clear cart if logged in
+  // Optional: Take screenshot on failure
+  // Optional: Clear browser storage
 });
 ```
 
-**Session Cleanup:**
-- Clear browser cookies after tests (if needed)
-- Clear local storage (if needed)
-- Reset to initial application state
-
-**Cleanup Best Practices:**
-- Always use try-finally blocks in cleanup code
-- Log cleanup failures for debugging
-- Don't let cleanup failures fail tests
-- Verify cleanup was successful
+#### After Test Suite
+```typescript
+test.afterAll(async () => {
+  // Cleanup any test data
+  // Close database connections if applicable
+});
+```
 
 ---
 
 ## 7. Verification Approach
 
-### 1. Navigation Events Verification
+### Overview
+**All verifications must use `expect.soft()` to ensure complete test execution even when assertions fail.** This approach provides comprehensive reporting and allows detection of multiple issues in a single test run.
 
-**Strategy:** Use `expect.soft` to verify URL changes and key element presence after navigation
+### 7.1 Navigation Events Verification
 
-**Implementation Examples:**
+**Purpose**: Verify correct page navigation and URL changes
 
+**Implementation Pattern**:
 ```typescript
-// After login navigation
-await expect.soft(page).toHaveURL('https://www.demoblaze.com/index.html');
+// Verify URL after navigation
+await expect.soft(page).toHaveURL(URLS.CART);
 
-// After clicking Cart
-await expect.soft(page).toHaveURL(/cart.html/);
-
-// Verify page loaded by checking key element
-await expect.soft(page.locator('[PLACEHOLDER_CART_TITLE]')).toBeVisible();
-
-// After checkout completion, verify redirect to home
-await expect.soft(page).toHaveURL('https://www.demoblaze.com/index.html');
+// Verify key element presence indicating correct page
+await expect.soft(page.locator(cartPage.locators.cartTable)).toBeVisible();
 ```
 
-**What to Verify:**
-- URL matches expected pattern
-- Key page elements are visible (title, main container)
-- Previous page elements are no longer visible
+**Examples from Test Cases**:
+- **TC1**: After login, verify user stays on Home page
+- **TC3**: After checkout confirmation, verify redirect to Home page
+- **TC5**: Verify navigation through multiple pages
 
----
+### 7.2 UI State Verification
 
-### 2. UI State Verification
+**Purpose**: Verify element visibility, enabled/disabled state, and presence
 
-**Strategy:** Use `expect.soft` to verify visibility, enabled/disabled state, and element presence
-
-**Implementation Examples:**
-
+**Implementation Pattern**:
 ```typescript
-// Verify button visibility
-await expect.soft(page.locator('[PLACEHOLDER_LOGOUT_BUTTON]')).toBeVisible();
-await expect.soft(page.locator('[PLACEHOLDER_LOGIN_BUTTON]')).toBeHidden();
+// Verify element is visible
+await expect.soft(page.locator(selector)).toBeVisible();
 
-// Verify element state
-await expect.soft(page.locator('[PLACEHOLDER_PURCHASE_BUTTON]')).toBeEnabled();
+// Verify element is hidden
+await expect.soft(page.locator(selector)).toBeHidden();
+
+// Verify element is enabled/disabled
+await expect.soft(page.locator(selector)).toBeEnabled();
+await expect.soft(page.locator(selector)).toBeDisabled();
 
 // Verify element count
-const cartItems = page.locator('[PLACEHOLDER_CART_ITEM]');
-await expect.soft(cartItems).toHaveCount(2);
-
-// Verify element text content
-await expect.soft(page.locator('[PLACEHOLDER_WELCOME_MESSAGE]'))
-  .toContainText('Welcome autouser_20251005_1234');
+await expect.soft(page.locator(selector)).toHaveCount(expectedCount);
 ```
 
-**UI States to Verify:**
-- Element visibility (visible/hidden)
-- Element state (enabled/disabled/checked)
-- Element count (number of items)
-- Element text content
-- Element attributes (classes, aria labels)
+**Examples from Test Cases**:
+- **TC1**: 
+  - Verify modal closes (modal hidden)
+  - Verify logout button visible
+  - Verify login button hidden
+- **TC2**: 
+  - Verify 2 products displayed in cart
+  - Verify product names visible
+- **TC4**: 
+  - Verify deleted item not visible
+  - Verify remaining item still visible
 
----
+### 7.3 Text Content Verification
 
-### 3. Error Message Validation
+**Purpose**: Verify displayed text matches expected values
 
-**Strategy:** Use `expect.soft` to validate expected error texts
-
-**Implementation Examples:**
-
+**Implementation Pattern**:
 ```typescript
-// Verify error message appears
-await expect.soft(page.locator('[PLACEHOLDER_ERROR_MESSAGE]')).toBeVisible();
+// Exact text match
+await expect.soft(page.locator(selector)).toHaveText(expectedText);
 
-// Verify specific error text
-await expect.soft(page.locator('[PLACEHOLDER_ERROR_MESSAGE]'))
-  .toHaveText('Invalid username or password');
+// Contains text
+await expect.soft(page.locator(selector)).toContainText(expectedText);
 
-// Verify error message contains expected text
-await expect.soft(page.locator('[PLACEHOLDER_ERROR_MESSAGE]'))
-  .toContainText('required');
+// Regex match
+await expect.soft(page.locator(selector)).toHaveText(/pattern/);
 ```
 
-**Note:** While the current test cases don't include error scenarios, this approach should be used when implementing negative test cases.
+**Examples from Test Cases**:
+- **TC1**: Verify welcome message shows "Welcome autouser_20251005_1234"
+- **TC2**: Verify product names "Samsung galaxy s6", "MacBook Pro"
+- **TC3**: Verify confirmation message "Thank you for your purchase!"
 
----
+### 7.4 Numeric Verification
 
-### 4. Email Verification (If Applicable)
+**Purpose**: Verify prices, totals, and numeric calculations
 
-**Strategy:** Use `expect.soft` to verify email content if email testing is implemented
-
-**Implementation Examples:**
-
+**Implementation Pattern**:
 ```typescript
-// Note: Current test cases don't require email verification
-// This section is for future implementation if needed
+// Get numeric values
+const price1 = await page.locator(priceSelector1).textContent();
+const price2 = await page.locator(priceSelector2).textContent();
+const total = await page.locator(totalSelector).textContent();
 
-// Verify email received
-const emails = await emailService.getEmails();
-await expect.soft(emails).toHaveLength(1);
+// Parse and calculate
+const price1Num = parseFloat(price1.replace(/[^0-9.]/g, ''));
+const price2Num = parseFloat(price2.replace(/[^0-9.]/g, ''));
+const totalNum = parseFloat(total.replace(/[^0-9.]/g, ''));
+const expectedTotal = price1Num + price2Num;
 
-// Verify email subject
-await expect.soft(emails[0].subject).toBe('Order Confirmation');
-
-// Verify email body contains order details
-await expect.soft(emails[0].body).toContain(orderId);
-
-// Verify recipient
-await expect.soft(emails[0].to).toBe('customer@example.com');
+// Verify calculation
+await expect.soft(totalNum).toBe(expectedTotal);
 ```
 
-**Note:** Email verification is not required for current test cases but may be needed for future enhancements (e.g., order confirmation emails).
+**Examples from Test Cases**:
+- **TC2**: Verify total = sum of Samsung galaxy s6 ($360) + MacBook Pro ($1100) = $1460
+- **TC4**: Verify total updates after removal to only MacBook Air price
+- **TC3**: Verify order amount matches expected total
 
----
+### 7.5 Error Message Validation
 
-### 5. Popup/Modal Verification
+**Purpose**: Verify expected error texts (not applicable in current test cases but included for completeness)
 
-**Strategy:** Use `expect.soft` to verify modal appearance, content, and behavior
+**Implementation Pattern**:
+```typescript
+// Verify error message visibility
+await expect.soft(page.locator(errorSelector)).toBeVisible();
 
-**Implementation Examples:**
+// Verify error message text
+await expect.soft(page.locator(errorSelector)).toHaveText(expectedErrorMessage);
 
+// Verify error styling
+await expect.soft(page.locator(errorSelector)).toHaveCSS('color', 'rgb(255, 0, 0)');
+```
+
+### 7.6 Modal/Popup Verification
+
+**Purpose**: Verify modal appearance, content, and behavior
+
+**Implementation Pattern**:
 ```typescript
 // Verify modal appears
-await expect.soft(page.locator('[PLACEHOLDER_LOGIN_MODAL]')).toBeVisible();
+await expect.soft(page.locator(modalSelector)).toBeVisible();
 
 // Verify modal content
-await expect.soft(page.locator('[PLACEHOLDER_MODAL_TITLE]')).toHaveText('Log in');
+await expect.soft(page.locator(modalTitleSelector)).toHaveText(expectedTitle);
+await expect.soft(page.locator(modalBodySelector)).toContainText(expectedContent);
 
 // Verify modal buttons
-await expect.soft(page.locator('[PLACEHOLDER_MODAL_CLOSE_BUTTON]')).toBeVisible();
-await expect.soft(page.locator('[PLACEHOLDER_MODAL_SUBMIT_BUTTON]')).toBeEnabled();
+await expect.soft(page.locator(modalOkButton)).toBeVisible();
+await expect.soft(page.locator(modalCancelButton)).toBeVisible();
 
-// Verify modal closes
-await expect.soft(page.locator('[PLACEHOLDER_LOGIN_MODAL]')).toBeHidden();
-
-// Verify confirmation modal content
-await expect.soft(page.locator('[PLACEHOLDER_CONFIRMATION_MESSAGE]'))
-  .toContainText('Thank you for your purchase!');
+// Verify modal closes after action
+await page.locator(modalOkButton).click();
+await expect.soft(page.locator(modalSelector)).toBeHidden();
 ```
 
-**Modal States to Verify:**
-- Modal visibility (open/closed)
-- Modal title and header
-- Button presence and state
-- Content accuracy
-- Backdrop/overlay presence
+**Examples from Test Cases**:
+- **TC1**: Verify login modal opens and closes
+- **TC3**: 
+  - Verify checkout modal opens
+  - Verify confirmation popup with order details
+  - Verify OK button closes confirmation
 
----
+### 7.7 Alert Verification
 
-### 6. Cart and Checkout Verifications
+**Purpose**: Verify browser alerts and handle them appropriately
 
-**Strategy:** Use `expect.soft` for all cart calculations and item verifications
-
-**Implementation Examples:**
-
+**Implementation Pattern**:
 ```typescript
-// Verify product in cart
-await expect.soft(page.locator('[PLACEHOLDER_PRODUCT_NAME]'))
-  .toHaveText('Samsung galaxy s6');
-
-// Verify product price
-await expect.soft(page.locator('[PLACEHOLDER_PRODUCT_PRICE]'))
-  .toHaveText('360');
-
-// Verify cart total calculation
-const total = await cartPage.getCartTotal();
-await expect.soft(total).toBe(1460); // Sum of all items
-
-// Verify cart item count
-const itemCount = await cartPage.getProductCount();
-await expect.soft(itemCount).toBe(2);
-
-// Verify cart is empty after purchase
-await expect.soft(page.locator('[PLACEHOLDER_CART_ITEMS]')).toHaveCount(0);
-```
-
----
-
-### 7. Alert Dialog Handling
-
-**Strategy:** Handle browser alerts (not Playwright assertions, but verification of handling)
-
-**Implementation Examples:**
-
-```typescript
-// Setup alert handler
-page.on('dialog', async dialog => {
-  // Verify alert type
-  expect(dialog.type()).toBe('alert');
-  // Accept alert
+// Setup alert listener before action
+page.once('dialog', async dialog => {
+  await expect.soft(dialog.message()).toBe('Product added');
   await dialog.accept();
 });
 
-// Trigger action that causes alert
-await productDetailPage.clickAddToCart();
-
-// Verify alert was handled (implicit - no error thrown)
+// Perform action that triggers alert
+await page.locator(addToCartButton).click();
 ```
 
----
+**Examples from Test Cases**:
+- **TC2**: Accept alert after each "Add to cart" action
+- **TC5**: Accept alerts during shopping flow
 
-### 8. Soft Assertions Usage
+### 7.8 Complete Verification Example
 
-**Why Use `expect.soft`:**
-- Continues test execution even if assertion fails
-- Collects all verification failures in one test run
-- Provides comprehensive test report
-- Identifies multiple issues in single test run
-
-**When to Use `expect.soft`:**
-- ✅ All UI state verifications
-- ✅ All navigation verifications
-- ✅ All text content verifications
-- ✅ All element visibility checks
-- ✅ All cart calculations
-
-**When to Use Regular `expect`:**
-- ❌ Critical preconditions (e.g., page load)
-- ❌ Actions that depend on previous steps (rare cases)
-- ❌ Fixture setup/teardown (not in tests)
-
-**Example: Multiple Verifications with Soft Assertions**
-
+**From TC1: Login Test**
 ```typescript
-test('should verify cart state after adding items', async ({ page }) => {
-  // Soft assertions - all will be evaluated
-  await expect.soft(page).toHaveURL(/cart.html/);
-  await expect.soft(cartPage.locators.productName.nth(0)).toHaveText('Samsung galaxy s6');
-  await expect.soft(cartPage.locators.productPrice.nth(0)).toHaveText('360');
-  await expect.soft(cartPage.locators.productName.nth(1)).toHaveText('MacBook Pro');
-  await expect.soft(cartPage.locators.productPrice.nth(1)).toHaveText('1100');
-  await expect.soft(cartPage.locators.totalAmount).toHaveText('1460');
+test('should login successfully with valid credentials', async ({ page }) => {
+  const loginPage = new LoginPage(page);
+  const homePage = new HomePage(page);
   
-  // If any assertion fails, test is marked as failed
-  // But all verifications are executed and reported
+  await page.goto(BASE_URL);
+  await loginPage.openLoginModal();
+  await loginPage.loginWithValidAccount(VALID_USER);
+  
+  // Verification 1: Modal closes
+  await expect.soft(page.locator(loginPage.locators.loginModal)).toBeHidden();
+  
+  // Verification 2: Navbar shows welcome message
+  await expect.soft(page.locator(homePage.locators.welcomeMessage))
+    .toContainText(`Welcome ${VALID_USER.username}`);
+  
+  // Verification 3: Display logout button
+  await expect.soft(page.locator(homePage.locators.navbarLogout)).toBeVisible();
+  
+  // Verification 4: Hide login button
+  await expect.soft(page.locator(homePage.locators.navbarLogin)).toBeHidden();
 });
 ```
 
----
+### 7.9 Soft Assertions Best Practices
 
-### 9. Verification Pattern for Each Test Case
+**Why use `expect.soft()`:**
+1. **Complete reporting**: All assertions are executed, not just until first failure
+2. **Comprehensive feedback**: Developers see all issues in one test run
+3. **Better debugging**: Multiple failure points provide more context
+4. **Efficient testing**: No need to fix and re-run repeatedly
 
-**TC-1 (Login):**
+**When to use hard assertions:**
+- When subsequent steps depend on assertion passing (e.g., element must exist before clicking)
+- For critical preconditions that make test invalid if failed
+
+**Implementation Guideline:**
+- **Default to `expect.soft()`** for all verifications
+- Use hard `expect()` only when absolutely necessary
+- Group related soft assertions together
+- Add descriptive messages for clarity
+
 ```typescript
-// Modal closes
-await expect.soft(loginModal.locators.modal).toBeHidden();
-// Navbar shows welcome message
-await expect.soft(homePage.locators.navbar.welcomeMessage)
-  .toContainText('Welcome autouser_20251005_1234');
-// Logout button visible
-await expect.soft(homePage.locators.navbar.logout).toBeVisible();
-// Login button hidden
-await expect.soft(homePage.locators.navbar.login).toBeHidden();
-```
-
-**TC-2 (Add Multiple Items):**
-```typescript
-// Cart page displays
-await expect.soft(page).toHaveURL(/cart.html/);
-// Two products present
-await expect.soft(cartPage.locators.cartItems).toHaveCount(2);
-// Correct product names
-await expect.soft(cartPage.locators.productName.nth(0)).toHaveText('Samsung galaxy s6');
-await expect.soft(cartPage.locators.productName.nth(1)).toHaveText('MacBook Pro');
-// Correct prices
-await expect.soft(cartPage.locators.productPrice.nth(0)).toContainText('360');
-await expect.soft(cartPage.locators.productPrice.nth(1)).toContainText('1100');
-// Correct total
-await expect.soft(cartPage.locators.totalAmount).toContainText('1460');
-```
-
-**TC-3 (Checkout):**
-```typescript
-// Confirmation popup displayed
-await expect.soft(confirmationModal.locators.modal).toBeVisible();
-// Success message
-await expect.soft(confirmationModal.locators.confirmationMessage)
-  .toContainText('Thank you for your purchase!');
-// Order ID present (dynamic value)
-const orderText = await confirmationModal.getFullConfirmationText();
-await expect.soft(orderText).toMatch(/Id: \d+/);
-// Amount present
-await expect.soft(orderText).toMatch(/Amount: \d+/);
-// After clicking OK, redirects to home
-await expect.soft(page).toHaveURL(/index.html/);
-// Cart is cleared
-await expect.soft(cartPage.locators.cartItems).toHaveCount(0);
-```
-
-**TC-4 (Remove Item):**
-```typescript
-// Item removed from cart
-await expect.soft(page.locator('[PLACEHOLDER_PRODUCT_ROW]:has-text("Sony xperia z5")')).toBeHidden();
-// Only one item remains
-await expect.soft(cartPage.locators.cartItems).toHaveCount(1);
-// Remaining item is correct
-await expect.soft(cartPage.locators.productName.first()).toHaveText('MacBook Air');
-// Total updated correctly
-const expectedTotal = 700; // MacBook Air price
-await expect.soft(cartPage.locators.totalAmount).toContainText(String(expectedTotal));
-```
-
-**TC-5 (Full Flow):**
-```typescript
-// Multiple verifications throughout:
-// - Login success (same as TC-1)
-// - Products added (same as TC-2 pattern)
-// - Checkout success (same as TC-3)
-// - Logout verification:
-await expect.soft(homePage.locators.navbar.login).toBeVisible();
-await expect.soft(homePage.locators.navbar.logout).toBeHidden();
-await expect.soft(homePage.locators.navbar.welcomeMessage).toBeHidden();
+await expect.soft(selector, 'Welcome message should be visible after login').toBeVisible();
 ```
 
 ---
 
 ## 8. Special Considerations
 
-### 1. Internationalization Aspects
+### 8.1 Alert Handling
 
-**Challenge:** The application may contain mixed language content (English and potentially other languages)
+**Challenge**: Browser alerts after adding products to cart require acceptance
 
-**Considerations:**
-- **Current Test Cases:** All content appears to be in English
-- **Text Matching:** Use exact text matching for English content
-- **Unicode Support:** Ensure test framework handles UTF-8 encoding
-- **Locator Strategy:** Prefer test IDs or aria labels over text-based locators to avoid i18n issues
-
-**Implementation Approach:**
+**Solution Strategy**:
 ```typescript
-// Avoid text-based locators when possible
-// ❌ Bad: page.locator('text=Log in')
-// ✅ Good: page.locator('[data-testid="login-button"]')
-
-// For assertions, use exact text or contains
-await expect.soft(element).toHaveText('Welcome autouser_20251005_1234');
-await expect.soft(element).toContainText('Thank you for your purchase!');
-```
-
-**Future Considerations:**
-- If Japanese or other language content is added, create language-specific test data files
-- Use i18n key-based assertions instead of hardcoded text
-- Parameterize tests to run against multiple locales
-
----
-
-### 2. Timing/Synchronization Considerations
-
-**Critical Timing Points:**
-
-**Modal Appearances/Disappearances:**
-- Login modal open/close
-- Checkout modal open/close
-- Confirmation modal open/close
-
-**Strategy:**
-```typescript
-// Wait for modal to appear before interacting
-await expect(loginModal.locators.modal).toBeVisible();
-await loginModal.fillUsername(username);
-
-// Wait for modal to close after action
-await expect(loginModal.locators.modal).toBeHidden();
-```
-
-**Alert Dialogs:**
-- Alerts appear after "Add to cart" action
-- Must be handled immediately
-
-**Strategy:**
-```typescript
-// Setup handler before triggering action
-page.on('dialog', async dialog => await dialog.accept());
-await productDetailPage.clickAddToCart();
-// Continue after alert is handled
-```
-
-**Page Navigation:**
-- Category selection triggers page reload
-- Cart navigation
-- Home navigation
-
-**Strategy:**
-```typescript
-// Use Playwright's built-in waiting
-await page.waitForLoadState('domcontentloaded');
-// Or wait for specific element
-await expect(homePage.locators.categories.laptops).toBeVisible();
-```
-
-**Dynamic Content Updates:**
-- Cart total recalculation after item removal
-- Navbar state change after login/logout
-
-**Strategy:**
-```typescript
-// Wait for specific state change
-await expect(cartPage.locators.totalAmount).toHaveText(expectedTotal);
-```
-
-**Recommended Timeout Configuration:**
-```typescript
-// playwright.config.ts
-use: {
-  actionTimeout: 10000, // 10 seconds for actions
-  navigationTimeout: 30000, // 30 seconds for navigation
+// Implement in ProductDetailPage or as utility
+async addToCart(): Promise<void> {
+  // Setup alert listener before clicking
+  this.page.once('dialog', async dialog => {
+    expect.soft(dialog.message()).toBe(MESSAGES.PRODUCT_ADDED);
+    await dialog.accept();
+  });
+  
+  await this.clickElement(this.locators.addToCartButton);
+  
+  // Wait for alert to be handled
+  await this.page.waitForTimeout(500);
 }
-
-// Per-test override if needed
-await expect(element).toBeVisible({ timeout: 15000 });
 ```
 
----
+**Affected Test Cases**: TC2, TC4, TC5
 
-### 3. Environment-Specific Configurations
+### 8.2 Timing and Synchronization
 
-**Base URL Management:**
+**Challenges**:
+1. Modal animations (open/close)
+2. Page navigation delays
+3. Cart updates after item removal
+4. Product list filtering after category selection
+
+**Solution Strategy**:
+
+**Use Playwright's built-in waiting mechanisms:**
 ```typescript
-// playwright.config.ts
-use: {
-  baseURL: process.env.BASE_URL || 'https://www.demoblaze.com/',
-}
+// Wait for element to be visible
+await page.locator(selector).waitFor({ state: 'visible' });
 
-// In tests
-await page.goto('/'); // Uses baseURL from config
+// Wait for element to be hidden
+await page.locator(selector).waitFor({ state: 'hidden' });
+
+// Wait for navigation
+await page.waitForURL(expectedURL);
+
+// Wait for network idle (use sparingly)
+await page.waitForLoadState('networkidle');
 ```
 
-**Test User Management:**
-- **Current Approach:** Hardcoded test user credentials
-- **Recommendation:** Use environment variables for different environments
-
+**Implement custom wait helpers:**
 ```typescript
-// .env.local
-TEST_USER_USERNAME=autouser_20251005_1234
-TEST_USER_PASSWORD=autouser_20251005_1234
+// utils/wait-helpers.ts
+export class WaitHelpers {
+  static async waitForModalToOpen(page: Page, modalSelector: string): Promise<void> {
+    await page.locator(modalSelector).waitFor({ state: 'visible', timeout: 5000 });
+  }
 
-// .env.staging
-TEST_USER_USERNAME=staging_user_001
-TEST_USER_PASSWORD=staging_pass_001
-```
+  static async waitForModalToClose(page: Page, modalSelector: string): Promise<void> {
+    await page.locator(modalSelector).waitFor({ state: 'hidden', timeout: 5000 });
+  }
 
-**Browser Configuration:**
-```typescript
-// Different configurations for different environments
-projects: [
-  {
-    name: 'chromium-local',
-    use: { 
-      ...devices['Desktop Chrome'],
-      headless: false, // For local debugging
-    },
-  },
-  {
-    name: 'chromium-ci',
-    use: { 
-      ...devices['Desktop Chrome'],
-      headless: true, // For CI/CD
-    },
-  },
-]
-```
-
-**Test Data Environment Variables:**
-```typescript
-// Access environment-specific data
-const checkoutInfo = {
-  name: process.env.TEST_CUSTOMER_NAME || 'John Doe',
-  country: process.env.TEST_CUSTOMER_COUNTRY || 'USA',
-  // ... other fields
-};
-```
-
----
-
-### 4. Error Handling Approach
-
-**Page Object Error Handling:**
-```typescript
-// In page object methods
-async clickElement(locator: string): Promise<void> {
-  try {
-    await this.page.locator(locator).click({ timeout: 10000 });
-  } catch (error) {
-    throw new Error(`Failed to click element ${locator}: ${error.message}`);
+  static async waitForCartUpdate(page: Page): Promise<void> {
+    // Wait for cart table to be stable
+    await page.waitForLoadState('domcontentloaded');
+    await page.waitForTimeout(500); // Allow time for cart recalculation
   }
 }
 ```
 
-**Test-Level Error Handling:**
+**Configuration in `playwright.config.ts`:**
 ```typescript
-test('should handle unexpected popups', async ({ page }) => {
+export default defineConfig({
+  use: {
+    actionTimeout: 10000, // 10 seconds for actions
+    navigationTimeout: 30000, // 30 seconds for navigation
+  },
+  expect: {
+    timeout: 5000 // 5 seconds for assertions
+  }
+});
+```
+
+### 8.3 Internationalization (Japanese Text)
+
+**Note**: Current test cases don't include Japanese text, but prompt mentions it as consideration
+
+**Handling Strategy**:
+```typescript
+// If Japanese text is present in buttons/errors:
+
+// 1. Use Unicode in locators
+const loginButtonJapanese = 'text=ログイン';
+
+// 2. Store in constants
+export const JAPANESE_MESSAGES = {
+  LOGIN: 'ログイン',
+  LOGOUT: 'ログアウト',
+  ADD_TO_CART: 'カートに追加'
+};
+
+// 3. Use in assertions
+await expect.soft(page.locator(selector)).toHaveText(JAPANESE_MESSAGES.LOGIN);
+```
+
+### 8.4 Environment-Specific Configuration
+
+**Configuration Management**:
+```typescript
+// constants/environment.ts
+export const ENV = {
+  BASE_URL: process.env.BASE_URL || 'https://www.demoblaze.com/',
+  TIMEOUT: parseInt(process.env.TIMEOUT || '30000'),
+  HEADLESS: process.env.HEADLESS !== 'false',
+  BROWSER: process.env.BROWSER || 'chromium',
+  SLOWMO: parseInt(process.env.SLOWMO || '0')
+};
+
+// Usage in tests
+await page.goto(ENV.BASE_URL);
+```
+
+**Environment Files**:
+```bash
+# .env.development
+BASE_URL=https://www.demoblaze.com/
+TIMEOUT=30000
+HEADLESS=false
+
+# .env.staging
+BASE_URL=https://staging.demoblaze.com/
+TIMEOUT=60000
+HEADLESS=true
+
+# .env.production
+BASE_URL=https://www.demoblaze.com/
+TIMEOUT=60000
+HEADLESS=true
+```
+
+### 8.5 Error Handling Approach
+
+**Page Object Level**:
+```typescript
+export class CommonPage {
+  async clickElement(selector: string): Promise<void> {
+    try {
+      await this.page.locator(selector).click();
+    } catch (error) {
+      console.error(`Failed to click element: ${selector}`, error);
+      throw error; // Re-throw to fail test
+    }
+  }
+
+  async safeClick(selector: string): Promise<boolean> {
+    try {
+      await this.page.locator(selector).click({ timeout: 5000 });
+      return true;
+    } catch (error) {
+      console.warn(`Element not clickable: ${selector}`);
+      return false;
+    }
+  }
+}
+```
+
+**Test Level**:
+```typescript
+test('should handle errors gracefully', async ({ page }) => {
   try {
-    // Test steps
+    // Test actions
+    await homePage.selectProduct('Non-existent Product');
   } catch (error) {
-    // Capture screenshot on failure
-    await page.screenshot({ path: 'error-screenshot.png' });
+    // Log error for debugging
+    console.error('Test failed:', error);
+    
+    // Take screenshot for investigation
+    await page.screenshot({ path: `error-${Date.now()}.png` });
+    
+    // Re-throw to mark test as failed
     throw error;
   }
 });
 ```
 
-**Alert Handling Errors:**
+**Global Error Handler** (in `playwright.config.ts`):
 ```typescript
-// Setup error handling for unexpected dialogs
-page.on('dialog', async dialog => {
-  console.log(`Unexpected dialog: ${dialog.type()} - ${dialog.message()}`);
-  await dialog.accept();
-});
-```
-
-**Network Error Handling:**
-```typescript
-// Handle network failures gracefully
-page.on('response', response => {
-  if (!response.ok()) {
-    console.warn(`Request failed: ${response.url()} - ${response.status()}`);
+export default defineConfig({
+  use: {
+    screenshot: 'only-on-failure',
+    video: 'retain-on-failure',
+    trace: 'on-first-retry'
   }
 });
 ```
 
-**Retry Strategy:**
+### 8.6 Dynamic Content Handling
+
+**Challenge**: Product prices may change, cart IDs are dynamic
+
+**Solution**:
 ```typescript
-// playwright.config.ts
-retries: process.env.CI ? 2 : 0, // Retry failed tests in CI
+// Instead of hardcoding prices, fetch and verify relative values
+const product1Price = await cartPage.getProductPrice('Samsung galaxy s6');
+const product2Price = await cartPage.getProductPrice('MacBook Pro');
+const displayedTotal = await cartPage.getTotalPrice();
+const calculatedTotal = product1Price + product2Price;
+
+await expect.soft(displayedTotal).toBe(calculatedTotal);
 ```
 
-**Soft Assertion Error Handling:**
-- Soft assertions collect all failures
-- Test is marked as failed if any soft assertion fails
-- All verifications are executed regardless of individual failures
+### 8.7 Test Data Isolation
 
----
+**Strategy**: Each test should be independent and not rely on other tests
 
-### 5. State Management Between Test Steps
+**Implementation**:
+```typescript
+// Use beforeEach for setup
+test.beforeEach(async ({ page }) => {
+  await page.goto(BASE_URL);
+  // Each test starts from home page with clean state
+});
 
-**Maintaining User Session:**
-- Login state persists through page navigation
-- Use fixtures to maintain authenticated state
-- Avoid re-login unless testing logout functionality
+// Use afterEach for cleanup
+test.afterEach(async ({ page }) => {
+  // Clear cart if needed
+  // Logout if needed
+  // Clean up test data
+});
+```
 
-**Cart State Persistence:**
-- Cart contents persist across page navigation
-- Verify cart state before and after operations
-- Clear cart in cleanup if needed
+**Fixtures for Shared State**:
+```typescript
+// Use fixtures instead of global state
+export const authenticatedUser = base.extend({
+  authenticatedPage: async ({ page }, use) => {
+    // Setup
+    await loginPage.loginWithValidAccount(VALID_USER);
+    // Provide page to test
+    await use(page);
+    // Teardown happens automatically
+  }
+});
+```
 
-**Test Data State:**
-- Each test should start with known state
-- Use `test.beforeEach` to reset state
-- Avoid test interdependencies
+### 8.8 Parallel Execution Considerations
 
----
+**Configuration**:
+```typescript
+// playwright.config.ts
+export default defineConfig({
+  workers: process.env.CI ? 2 : 4, // Adjust based on environment
+  fullyParallel: true,
+  retries: process.env.CI ? 2 : 0
+});
+```
 
-### 6. Performance Considerations
-
-**Optimize Test Execution:**
-- Use parallel execution where possible
-- Group related tests in describe blocks
-- Reuse authenticated sessions via fixtures
-
-**Minimize Wait Times:**
-- Use specific element waits instead of arbitrary delays
-- Leverage Playwright's auto-waiting
-- Set appropriate timeout values
-
-**Resource Management:**
-- Close unnecessary browser contexts
-- Clean up after each test
-- Avoid memory leaks in page object instances
+**Test Isolation**:
+- Each test uses separate browser context (automatic)
+- Avoid shared global state
+- Use unique test data per test
+- Don't depend on test execution order
 
 ---
 
 ## 9. Quality Assurance
 
-### Peer Review Process
+### 9.1 Peer Review Process
 
-**Review Checklist for Implemented Tests:**
+**Code Review Checklist**:
 
-#### 1. Code Quality
-- [ ] Test file follows naming convention: `<feature>.spec.ts`
-- [ ] Test descriptions are clear and descriptive
-- [ ] No hardcoded values - use test data files or constants
-- [ ] No commented-out code or unused imports
-- [ ] Proper TypeScript typing for all variables and functions
-- [ ] Code is DRY (Don't Repeat Yourself) - common logic in utilities
+- [ ] **Test Coverage**
+  - All test cases from `testcase-demo.md` are implemented
+  - Each test step has corresponding code
+  - All expected results have assertions
 
-#### 2. Page Object Model Adherence
-- [ ] Page objects used for all UI interactions
-- [ ] No direct `page.locator()` calls in test files
-- [ ] Locators defined in separate locator files, not in page objects
-- [ ] All locator files extend from `CommonLocator`
-- [ ] Page object methods return appropriate types (e.g., `Promise<CartPage>`)
-- [ ] Business logic encapsulated in page object methods
-- [ ] Common utilities reused from `CommonPage`
+- [ ] **Code Quality**
+  - Follows naming conventions (camelCase for methods, PascalCase for classes)
+  - No code duplication (reusable methods used)
+  - Proper error handling implemented
+  - Comments added for complex logic
 
-#### 3. Test Structure
-- [ ] Clear test setup in `beforeEach` hooks
-- [ ] Proper cleanup in `afterEach` hooks
-- [ ] Tests are independent and can run in any order
-- [ ] Fixtures used appropriately for preconditions
-- [ ] Test follows AAA pattern: Arrange, Act, Assert
+- [ ] **Page Objects**
+  - Each page object extends `CommonPage`
+  - Methods are business-level (not low-level clicks)
+  - Locators defined in separate locator files
+  - Locator classes extend `CommonLocators`
 
-#### 4. Assertions
-- [ ] All verifications use `expect.soft` (unless critical precondition)
-- [ ] Assertions verify actual expected results from test case
-- [ ] Each `</br>` line in test case has corresponding assertion
-- [ ] Assertion messages are clear and helpful
-- [ ] No redundant assertions
+- [ ] **Assertions**
+  - All verifications use `expect.soft()` by default
+  - Hard assertions only where necessary
+  - Descriptive assertion messages included
+  - All expected results from test cases verified
 
-#### 5. Error Handling
-- [ ] Alert handlers set up before triggering actions
-- [ ] Modal waits implemented before interactions
-- [ ] Navigation waits properly handled
-- [ ] Timeouts configured appropriately
-- [ ] Error messages are descriptive
+- [ ] **Test Data**
+  - Uses data from `data/` directory
+  - Interfaces properly defined
+  - No hardcoded values in test code
+  - Test data is maintainable
 
-#### 6. Test Data Management
-- [ ] Test data loaded from appropriate sources (JSON, generator)
-- [ ] No sensitive data hardcoded in tests
-- [ ] Dynamic data generated where appropriate
-- [ ] Test data interfaces used correctly
+- [ ] **Special Handling**
+  - Alert handling implemented correctly
+  - Wait strategies appropriate
+  - Navigation verified
+  - Modals handled properly
 
----
+**Review Process**:
+1. Developer creates pull request with test implementation
+2. Reviewer checks against this test plan
+3. Reviewer runs tests locally to verify execution
+4. Reviewer provides feedback on checklist items
+5. Developer addresses feedback
+6. Final approval and merge
 
-### Validation Criteria for Completed Scripts
+### 9.2 Validation Criteria
 
-**Test Implementation Completion Criteria:**
+**Test Implementation Completion**:
 
-#### Functional Completeness
-- [ ] All steps from test case are implemented
-- [ ] All expected results have corresponding assertions
-- [ ] Each `</br>` separated step is treated as individual action/verification
-- [ ] Test preconditions properly set up
-- [ ] Test cleanup properly implemented
+| Criterion | Description | Validation Method |
+|-----------|-------------|------------------|
+| **Completeness** | All 5 test cases implemented | Count test functions match test cases |
+| **Correctness** | Tests follow test case steps exactly | Manual review of test steps vs implementation |
+| **Assertions** | All expected results verified | Count assertions match expected results |
+| **Execution** | All tests pass on first run | Run test suite with `npm test` |
+| **Consistency** | Follows project structure | Verify file organization matches plan |
+| **Reusability** | Common patterns extracted | Check for duplicate code |
 
-#### Technical Completeness
-- [ ] Test runs successfully in isolation
-- [ ] Test runs successfully in test suite
-- [ ] Test passes consistently (no flaky behavior)
-- [ ] Test execution time is reasonable (< 60 seconds per test)
-- [ ] Test works across all configured browsers
+**Acceptance Criteria for Each Test**:
+- Test name clearly describes what is being tested
+- Test follows arrange-act-assert pattern
+- All preconditions are met before test actions
+- Each test step from test case has corresponding code
+- Each expected result has soft assertion
+- Test cleans up after itself (if needed)
+- Test is independent (can run in isolation)
 
-#### Code Quality Metrics
-- [ ] No linting errors
-- [ ] No TypeScript compilation errors
-- [ ] Code coverage meets standards (if applicable)
-- [ ] No console errors or warnings during execution
-- [ ] Screenshots/traces captured on failure
+**Test Suite Validation**:
+```bash
+# All tests should pass
+npm test
 
-#### Documentation
-- [ ] Test description clearly states what is being tested
-- [ ] Complex logic has inline comments
-- [ ] Test data sources are documented
-- [ ] Page object methods have JSDoc comments
+# Generate test report
+npm run test:report
 
----
+# Check code coverage (if applicable)
+npm run test:coverage
+```
 
-### Documentation Requirements
+### 9.3 Documentation Requirements
 
-**1. Test File Documentation:**
+**Code Documentation**:
+
 ```typescript
 /**
- * Test Suite: User Authentication
+ * Verifies successful login with valid user credentials
+ * Test Case ID: TC1
  * 
- * Description: Validates login functionality with valid credentials
+ * Preconditions:
+ * - User account exists: autouser_20251005_1234
  * 
- * Test Cases Covered:
- * - TC-1: Valid Login
+ * Steps:
+ * 1. Click Log in button
+ * 2. Input username
+ * 3. Input password
+ * 4. Click Log in
  * 
- * Dependencies:
- * - Valid test user account must exist
- * 
- * Author: [Developer Name]
- * Last Updated: [Date]
+ * Expected Results:
+ * 1. Modal closes, user stays on Home page
+ * 2. Navbar shows welcome message
+ * 3. Display logout button
+ * 4. Hide login button
  */
-test.describe('User Authentication', () => {
-  // Test implementations
+test('should login successfully with valid credentials', async ({ page }) => {
+  // Test implementation
 });
 ```
 
-**2. Page Object Documentation:**
+**Page Object Documentation**:
 ```typescript
 /**
- * LoginModal Page Object
+ * LoginPage handles all authentication-related interactions
  * 
- * Handles interactions with the login modal dialog
- * 
- * Locator File: login-locator.ts
+ * Locator File: login-locators.ts
  * 
  * Key Methods:
- * - loginWithCredentials(user): Complete login flow
- * - fillUsername(username): Enter username
- * - fillPassword(password): Enter password
+ * - openLoginModal(): Opens the login dialog
+ * - loginWithValidAccount(): Performs complete login flow
+ * - verifyLoginSuccess(): Verifies successful login state
  */
-export class LoginModal extends CommonPage {
+export class LoginPage extends CommonPage {
   // Implementation
 }
 ```
 
-**3. Locator File Documentation:**
+**Required Documentation Files**:
+1. **README.md** in `tests/` directory
+   - Overview of test suite
+   - How to run tests
+   - Test organization structure
+   - Common issues and solutions
+
+2. **Page Object README.md** in `pages/` directory
+   - List of all page objects
+   - Purpose of each page object
+   - Common methods available
+
+3. **Test Data README.md** in `data/` directory
+   - Available test data
+   - How to add new test data
+   - Data maintenance guidelines
+
+### 9.4 Maintenance Considerations
+
+**Regular Maintenance Tasks**:
+
+| Task | Frequency | Owner | Description |
+|------|-----------|-------|-------------|
+| **Update Locators** | As needed | QA Team | Update selectors when UI changes |
+| **Review Test Data** | Monthly | QA Team | Ensure test data is valid and relevant |
+| **Check Dependencies** | Weekly | DevOps | Update Playwright and dependencies |
+| **Analyze Failures** | Daily | QA Team | Investigate and fix flaky tests |
+| **Refactor Code** | Quarterly | QA Team | Improve test code quality |
+
+**Handling UI Changes**:
+- **Locator updates**: Only need to update locator files, not test code
+- **Page flow changes**: Update page object methods
+- **New features**: Add new page objects following same pattern
+- **Removed features**: Archive or remove corresponding tests
+
+**Version Control**:
+- Use meaningful commit messages
+- Tag stable versions
+- Branch strategy: `feature/test-[feature-name]`
+- Keep test plan updated with implementation changes
+
+**Flaky Test Management**:
 ```typescript
-/**
- * Login Modal Locators
- * 
- * Extends: CommonLocator
- * 
- * Selectors for login modal dialog elements
- * 
- * Note: Update these selectors if UI structure changes
- */
-export class LoginLocator extends CommonLocator {
-  // Locator definitions
-}
+// Mark flaky tests for investigation
+test.fixme('should handle intermittent issue', async ({ page }) => {
+  // Test code
+});
+
+// Skip temporarily if blocking
+test.skip('should work after bug fix', async ({ page }) => {
+  // Test code
+});
+
+// Retry flaky tests
+test.describe.configure({ retries: 2 });
 ```
 
-**4. Test Data Documentation:**
-```typescript
-/**
- * Test Users Data
- * 
- * Contains credentials for test user accounts
- * 
- * Environment: Development/Staging
- * 
- * Note: Update if test accounts are refreshed
- */
-export const testUsers = {
-  // User data
-};
-```
+**Performance Monitoring**:
+- Track test execution time
+- Identify slow tests for optimization
+- Use parallel execution where possible
+- Monitor CI/CD pipeline performance
 
-**5. README Documentation:**
-
-Create `tests/demoblaze/README.md`:
-```markdown
-# Demoblaze E-commerce Test Suite
-
-## Overview
-Automated test suite for Demoblaze e-commerce application using Playwright.
-
-## Test Coverage
-- User Authentication (Login/Logout)
-- Shopping Cart Management
-- Checkout Process
-- End-to-End Shopping Flow
-
-## Setup
-1. Install dependencies: `npm install`
-2. Set up environment variables (see `.env.example`)
-3. Ensure test user accounts exist
-
-## Running Tests
-```bash
-# Run all tests
-npm test
-
-# Run specific test file
-npx playwright test tests/demoblaze/login.spec.ts
-
-# Run with UI mode
-npx playwright test --ui
-
-# Debug mode
-npx playwright test --debug
-```
-
-## Test Data
-- User credentials: `tests/data/users.json`
-- Product data: `tests/data/products.json`
-- Checkout info: `tests/data/checkout-info.json`
-
-## Page Objects
-Located in `tests/pages/`:
-- CommonPage: Base class with shared utilities
-- HomePage: Main landing page
-- LoginModal: Authentication modal
-- CartPage: Shopping cart
-- ProductDetailPage: Product details
-- CheckoutModal: Order placement
-- ConfirmationModal: Purchase confirmation
-
-## Maintenance
-- Update locators in `tests/locators/` if UI changes
-- Update test data files if product names change
-- Review and update timeouts if needed
-```
-
----
-
-### Maintenance Considerations
-
-**1. Locator Maintenance Strategy**
-
-**When UI Changes:**
-- Update only the affected locator file
-- Page objects automatically use updated locators
-- Run affected tests to verify changes
-
-**Locator Versioning:**
-- Document locator changes in commit messages
-- Tag releases when major UI changes occur
-- Maintain locator changelog
-
-**Locator Review Schedule:**
-- Monthly review of flaky tests
-- Investigate if locator changes needed
-- Update to more stable selectors if available
-
-**2. Test Data Maintenance**
-
-**Product Data Updates:**
-- Review product data monthly
-- Verify product names still exist on site
-- Update prices if needed (or make assertions dynamic)
-
-**User Account Management:**
-- Rotate test user credentials periodically
-- Document active test accounts
-- Monitor for account expiration/lockout
-
-**Checkout Data:**
-- Update credit card expiration dates annually
-- Verify country/city names still valid
-- Update form field data if required fields change
-
-**3. Code Maintenance**
-
-**Regular Refactoring:**
-- Consolidate duplicate code into utilities
-- Extract common patterns into fixtures
-- Update TypeScript types as needed
-
-**Dependency Updates:**
-- Update Playwright regularly for bug fixes
-- Review release notes for breaking changes
-- Test suite verification after updates
-
-**Performance Optimization:**
-- Review test execution times
-- Optimize slow tests
-- Parallelize where possible
-
-**4. Documentation Maintenance**
-
-**Keep Updated:**
-- README with current setup instructions
-- Inline comments for complex logic
-- Test case mapping table
-- Locator documentation
-
-**Review Triggers:**
-- After major UI changes
-- After adding new tests
-- After significant refactoring
-- Quarterly documentation review
-
-**5. Monitoring and Alerts**
-
-**Test Failure Analysis:**
-- Review failed test trends
-- Identify flaky tests
-- Root cause analysis for failures
-
-**Metrics to Track:**
-- Test pass rate
-- Average execution time
-- Flaky test frequency
-- Code coverage (if applicable)
-
-**Continuous Improvement:**
-- Regularly review test plan effectiveness
-- Gather feedback from team
-- Update conventions based on lessons learned
-- Iterate on page object design
+**Knowledge Transfer**:
+- Document lessons learned
+- Share common patterns
+- Conduct code reviews
+- Maintain test plan documentation
+- Create troubleshooting guides
 
 ---
 
 ## Summary
 
-This comprehensive test plan provides a complete roadmap for implementing Playwright test scripts for the Demoblaze e-commerce application. The plan covers:
+This comprehensive test plan provides a complete blueprint for implementing Playwright test scripts for the DemoBlaze e-commerce application. The plan covers:
 
 ✅ **5 test cases** spanning login, cart management, checkout, and end-to-end flows  
-✅ **7 page objects** with clear responsibilities and locator separation  
-✅ **Structured project organization** with pages, locators, fixtures, and utilities  
-✅ **Test data management** strategy with static and dynamic data generation  
-✅ **Comprehensive verification approach** using soft assertions throughout  
-✅ **Special considerations** for timing, state management, and error handling  
-✅ **Quality assurance processes** for peer review and maintenance  
+✅ **5 page objects** with clear responsibilities and reusable methods  
+✅ **Locator inheritance structure** extending from common base  
+✅ **Test data management** with interfaces and centralized data  
+✅ **Soft assertion strategy** for comprehensive reporting  
+✅ **Special handling** for alerts, timing, and navigation  
+✅ **Quality assurance** processes for peer review and maintenance  
 
-The implementation should follow this plan to ensure consistency, maintainability, and alignment with project conventions.
+By following this plan, developers can implement consistent, maintainable, and robust test automation that accurately reflects the test cases and adheres to project conventions.
 
 ---
 
-**Document Version:** 1.0  
-**Created:** October 21, 2025  
-**Status:** Ready for Implementation
+**Document Version**: 1.0  
+**Last Updated**: October 21, 2025  
+**Status**: Ready for Implementation
