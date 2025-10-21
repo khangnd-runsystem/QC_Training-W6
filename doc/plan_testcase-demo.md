@@ -172,12 +172,13 @@ d:\QC_training\W6\
 - **Location**: `tests/` directory
 
 #### Test Functions
-- **Format**: `test('should [action/expected behavior]', async ({ page }) => { })`
+- **Format**: `test('TestcaseID - test case description - condition - expected outcome', async ({ page }) => { })`
 - **Examples**:
   ```typescript
-  test('should login successfully with valid credentials', ...)
-  test('should add multiple products from different categories to cart', ...)
-  test('should complete checkout with valid customer information', ...)
+  test('TC001 - Login successfully - when using valid credentials - user is redirected to dashboard', async ({ page }) => { })
+  test('TC002 - Add multiple products to cart - when selecting items from different categories - all selected products appear in cart', async ({ page }) => { })
+  test('TC003 - Complete checkout process - when entering valid customer information - order is placed successfully and confirmation is shown', async ({ page }) => { })
+
   ```
 
 #### Page Object Classes
@@ -210,26 +211,44 @@ d:\QC_training\W6\
 **Base Class: CommonPage**
 ```typescript
 // pages/common-page.ts
+import { Page } from "@playwright/test";
+import { CommonLocators } from "../locators/common-locators";
+
 export class CommonPage {
-  constructor(protected page: Page, protected locators: CommonLocators) {}
+  readonly commonLocators: CommonLocators;
+  protected readonly page: Page;
+
+  constructor(page: Page) {
+    this.page = page;
+    this.commonLocators = new CommonLocators(page);
+  }
   
-  // Generic reusable methods
-  async clickElement(selector: string): Promise<void>
-  async fillInput(selector: string, value: string): Promise<void>
-  async waitForElement(selector: string): Promise<void>
-  async getText(selector: string): Promise<string>
-  async isVisible(selector: string): Promise<boolean>
-  async acceptAlert(): Promise<void>
-  async navigateTo(url: string): Promise<void>
+  // Generic reusable methods (see common-page.ts for full implementation)
+  async navigate(url: string, options?: object): Promise<void>
+  async click(locator: Locator, option?: object): Promise<void>
+  async fill(locator: Locator, value: string, force?: boolean): Promise<void>
+  async waitForVisible(locator: Locator): Promise<void>
+  async getText(locator: Locator): Promise<string>
+  async isVisible(locator: Locator): Promise<boolean>
+  async hover(locator: Locator): Promise<void>
+  async dragAndDrop(sourceLocator: Locator, targetLocator: Locator): Promise<void>
+  // ... and many more utility methods
 }
 ```
 
 **Feature Pages extend CommonPage**
 ```typescript
 // pages/login-page.ts
+import { Page } from "@playwright/test";
+import { CommonPage } from "./common-page";
+import { LoginLocators } from "../locators/login-locators";
+
 export class LoginPage extends CommonPage {
+  readonly locators: LoginLocators;
+
   constructor(page: Page) {
-    super(page, new LoginLocators(page));
+    super(page);
+    this.locators = new LoginLocators(page);
   }
   
   // Business-level methods only
@@ -244,28 +263,59 @@ export class LoginPage extends CommonPage {
 **Base Class: CommonLocators**
 ```typescript
 // locators/common-locators.ts
+import { Locator, Page } from "@playwright/test";
+
 export class CommonLocators {
-  constructor(protected page: Page) {
+  protected page: Page;
+  
+  // Common locator properties - shared across all pages
+  navbarHome!: Locator;
+  navbarCart!: Locator;
+  navbarLogin!: Locator;
+  navbarLogout!: Locator;
+  welcomeMessage!: Locator;
+
+  constructor(page: Page) {
+    this.page = page;
     this.initializeLocators();
   }
-  
-  protected initializeLocators(): void {
-    // Common selectors used across multiple pages
+
+  public setPage(newPage: Page): void {
+    if (newPage !== this.page) {
+      this.page = newPage;
+      this.initializeLocators();
+    }
   }
-  
-  // Common locators
-  navbarHome: string = 'PLACEHOLDER_NAVBAR_HOME';
-  navbarCart: string = 'PLACEHOLDER_NAVBAR_CART';
-  navbarLogin: string = 'PLACEHOLDER_NAVBAR_LOGIN';
-  navbarLogout: string = 'PLACEHOLDER_NAVBAR_LOGOUT';
-  welcomeMessage: string = 'PLACEHOLDER_WELCOME_MESSAGE';
+
+  public getPage(): Page {
+    return this.page;
+  }
+
+  protected initializeLocators(): void {
+    // Initialize common selectors used across multiple pages
+    this.navbarHome = this.page.locator('PLACEHOLDER_NAVBAR_HOME');
+    this.navbarCart = this.page.locator('PLACEHOLDER_NAVBAR_CART');
+    this.navbarLogin = this.page.locator('PLACEHOLDER_NAVBAR_LOGIN');
+    this.navbarLogout = this.page.locator('PLACEHOLDER_NAVBAR_LOGOUT');
+    this.welcomeMessage = this.page.locator('PLACEHOLDER_WELCOME_MESSAGE');
+  }
 }
 ```
 
 **Feature Locators extend CommonLocators**
 ```typescript
 // locators/login-locators.ts
+import { Locator, Page } from "@playwright/test";
+import { CommonLocators } from "./common-locators";
+
 export class LoginLocators extends CommonLocators {
+  // Login-specific locator properties
+  loginModal!: Locator;
+  usernameInput!: Locator;
+  passwordInput!: Locator;
+  loginButton!: Locator;
+  closeModalButton!: Locator;
+
   constructor(page: Page) {
     super(page);
     this.initializeLocators();
@@ -273,15 +323,14 @@ export class LoginLocators extends CommonLocators {
   
   protected initializeLocators(): void {
     super.initializeLocators();
+    
     // Initialize login-specific locators
+    this.loginModal = this.page.locator('PLACEHOLDER_LOGIN_MODAL');
+    this.usernameInput = this.page.locator('PLACEHOLDER_USERNAME_INPUT');
+    this.passwordInput = this.page.locator('PLACEHOLDER_PASSWORD_INPUT');
+    this.loginButton = this.page.locator('PLACEHOLDER_LOGIN_BUTTON');
+    this.closeModalButton = this.page.locator('PLACEHOLDER_CLOSE_MODAL');
   }
-  
-  // Login-specific locators
-  loginModal: string = 'PLACEHOLDER_LOGIN_MODAL';
-  usernameInput: string = 'PLACEHOLDER_USERNAME_INPUT';
-  passwordInput: string = 'PLACEHOLDER_PASSWORD_INPUT';
-  loginButton: string = 'PLACEHOLDER_LOGIN_BUTTON';
-  closeModalButton: string = 'PLACEHOLDER_CLOSE_MODAL';
 }
 ```
 
@@ -392,9 +441,44 @@ export const cartWithItems = authenticatedUser.extend({
 
 **Class Definition**:
 ```typescript
+// pages/login-page.ts
+import { Page } from "@playwright/test";
+import { CommonPage } from "./common-page";
+import { LoginLocators } from "../locators/login-locators";
+import { LoginCredentials } from "../interfaces/login-credentials";
+
 export class LoginPage extends CommonPage {
+  readonly locators: LoginLocators;
+
   constructor(page: Page) {
-    super(page, new LoginLocators(page));
+    super(page);
+    this.locators = new LoginLocators(page);
+  }
+
+  // Business-level methods
+  async openLoginModal(): Promise<void> {
+    await this.click(this.commonLocators.navbarLogin);
+    await this.waitForVisible(this.locators.loginModal);
+  }
+
+  async loginWithValidAccount(credentials: LoginCredentials): Promise<void> {
+    await this.openLoginModal();
+    await this.fill(this.locators.usernameInput, credentials.username);
+    await this.fill(this.locators.passwordInput, credentials.password);
+    await this.click(this.locators.loginButton);
+    await this.waitForHidden(this.locators.loginModal);
+  }
+
+  async verifyLoginSuccess(username: string): Promise<void> {
+    await expect.soft(this.commonLocators.welcomeMessage).toContainText(`Welcome ${username}`);
+  }
+
+  async verifyLogoutButtonVisible(): Promise<void> {
+    await expect.soft(this.commonLocators.navbarLogout).toBeVisible();
+  }
+
+  async verifyLoginButtonHidden(): Promise<void> {
+    await expect.soft(this.commonLocators.navbarLogin).toBeHidden();
   }
 }
 ```
@@ -411,14 +495,35 @@ export class LoginPage extends CommonPage {
 
 **Locators Required** (from `LoginLocators`):
 ```typescript
-loginModal: string = 'PLACEHOLDER_LOGIN_MODAL';
-usernameInput: string = 'PLACEHOLDER_USERNAME_INPUT';
-passwordInput: string = 'PLACEHOLDER_PASSWORD_INPUT';
-loginButton: string = 'PLACEHOLDER_LOGIN_BUTTON';
-closeModalButton: string = 'PLACEHOLDER_CLOSE_MODAL';
-welcomeMessage: string = 'PLACEHOLDER_WELCOME_MESSAGE'; // extends from CommonLocators
-navbarLogout: string = 'PLACEHOLDER_NAVBAR_LOGOUT'; // extends from CommonLocators
-navbarLogin: string = 'PLACEHOLDER_NAVBAR_LOGIN'; // extends from CommonLocators
+// locators/login-locators.ts
+import { Locator, Page } from "@playwright/test";
+import { CommonLocators } from "./common-locators";
+
+export class LoginLocators extends CommonLocators {
+  // Login-specific locator properties
+  loginModal!: Locator;
+  usernameInput!: Locator;
+  passwordInput!: Locator;
+  loginButton!: Locator;
+  closeModalButton!: Locator;
+
+  constructor(page: Page) {
+    super(page);
+    this.initializeLocators();
+  }
+
+  protected initializeLocators(): void {
+    super.initializeLocators();
+
+    this.loginModal = this.page.locator('PLACEHOLDER_LOGIN_MODAL');
+    this.usernameInput = this.page.locator('PLACEHOLDER_USERNAME_INPUT');
+    this.passwordInput = this.page.locator('PLACEHOLDER_PASSWORD_INPUT');
+    this.loginButton = this.page.locator('PLACEHOLDER_LOGIN_BUTTON');
+    this.closeModalButton = this.page.locator('PLACEHOLDER_CLOSE_MODAL');
+  }
+}
+
+// Note: welcomeMessage, navbarLogout, navbarLogin are inherited from CommonLocators
 ```
 
 **Navigation Patterns**:
@@ -436,9 +541,56 @@ navbarLogin: string = 'PLACEHOLDER_NAVBAR_LOGIN'; // extends from CommonLocators
 
 **Class Definition**:
 ```typescript
+// pages/home-page.ts
+import { Page } from "@playwright/test";
+import { CommonPage } from "./common-page";
+import { HomeLocators } from "../locators/home-locators";
+
 export class HomePage extends CommonPage {
+  readonly locators: HomeLocators;
+
   constructor(page: Page) {
-    super(page, new HomeLocators(page));
+    super(page);
+    this.locators = new HomeLocators(page);
+  }
+
+  // Business-level methods
+  async selectCategory(categoryName: 'Phones' | 'Laptops' | 'Monitors'): Promise<void> {
+    let categoryLocator;
+    switch(categoryName) {
+      case 'Phones':
+        categoryLocator = this.locators.categoryPhones;
+        break;
+      case 'Laptops':
+        categoryLocator = this.locators.categoryLaptops;
+        break;
+      case 'Monitors':
+        categoryLocator = this.locators.categoryMonitors;
+        break;
+    }
+    await this.click(categoryLocator);
+    await this.page.waitForTimeout(1000); // Wait for product list to update
+  }
+
+  async selectProduct(productName: string): Promise<void> {
+    const productLocator = this.locators.getProductCard(productName);
+    await this.click(productLocator);
+  }
+
+  async navigateToCart(): Promise<void> {
+    await this.click(this.commonLocators.navbarCart);
+  }
+
+  async navigateToHome(): Promise<void> {
+    await this.click(this.commonLocators.navbarHome);
+  }
+
+  async clickLogout(): Promise<void> {
+    await this.click(this.commonLocators.navbarLogout);
+  }
+
+  async verifyWelcomeMessage(username: string): Promise<void> {
+    await expect.soft(this.commonLocators.welcomeMessage).toContainText(`Welcome ${username}`);
   }
 }
 ```
@@ -456,19 +608,36 @@ export class HomePage extends CommonPage {
 
 **Locators Required** (from `HomeLocators`):
 ```typescript
-// Categories
-categoryPhones: string = 'PLACEHOLDER_CATEGORY_PHONES';
-categoryLaptops: string = 'PLACEHOLDER_CATEGORY_LAPTOPS';
-categoryMonitors: string = 'PLACEHOLDER_CATEGORY_MONITORS';
+// locators/home-locators.ts
+import { Locator, Page } from "@playwright/test";
+import { CommonLocators } from "./common-locators";
 
-// Products (dynamic selector with product name)
-productCard: (productName: string) => string = (name) => `PLACEHOLDER_PRODUCT_CARD_${name}`;
+export class HomeLocators extends CommonLocators {
+  // Category locator properties
+  categoryPhones!: Locator;
+  categoryLaptops!: Locator;
+  categoryMonitors!: Locator;
 
-// Navbar (extends from CommonLocators)
-navbarHome: string = 'PLACEHOLDER_NAVBAR_HOME';
-navbarCart: string = 'PLACEHOLDER_NAVBAR_CART';
-navbarLogout: string = 'PLACEHOLDER_NAVBAR_LOGOUT';
-welcomeMessage: string = 'PLACEHOLDER_WELCOME_MESSAGE';
+  constructor(page: Page) {
+    super(page);
+    this.initializeLocators();
+  }
+
+  protected initializeLocators(): void {
+    super.initializeLocators();
+
+    this.categoryPhones = this.page.locator('PLACEHOLDER_CATEGORY_PHONES');
+    this.categoryLaptops = this.page.locator('PLACEHOLDER_CATEGORY_LAPTOPS');
+    this.categoryMonitors = this.page.locator('PLACEHOLDER_CATEGORY_MONITORS');
+  }
+
+  // Dynamic locator methods
+  getProductCard(productName: string): Locator {
+    return this.page.locator(`PLACEHOLDER_PRODUCT_CARD_${productName}`);
+  }
+}
+
+// Note: navbarHome, navbarCart, navbarLogout, welcomeMessage are inherited from CommonLocators
 ```
 
 **Navigation Patterns**:
@@ -487,9 +656,43 @@ welcomeMessage: string = 'PLACEHOLDER_WELCOME_MESSAGE';
 
 **Class Definition**:
 ```typescript
+// pages/product-detail-page.ts
+import { Page } from "@playwright/test";
+import { CommonPage } from "./common-page";
+import { ProductDetailLocators } from "../locators/product-detail-locators";
+
 export class ProductDetailPage extends CommonPage {
+  readonly locators: ProductDetailLocators;
+
   constructor(page: Page) {
-    super(page, new ProductDetailLocators(page));
+    super(page);
+    this.locators = new ProductDetailLocators(page);
+  }
+
+  // Business-level methods
+  async addToCart(): Promise<void> {
+    // Setup alert listener before clicking
+    this.page.once('dialog', async dialog => {
+      console.log(`Alert message: ${dialog.message()}`);
+      await dialog.accept();
+    });
+    
+    await this.click(this.locators.addToCartButton);
+    await this.page.waitForTimeout(500); // Wait for alert to be handled
+  }
+
+  async verifyProductName(expectedName: string): Promise<void> {
+    await expect.soft(this.locators.productName).toHaveText(expectedName);
+  }
+
+  async verifyProductPrice(expectedPrice: number): Promise<void> {
+    const priceText = await this.getText(this.locators.productPrice);
+    const actualPrice = parseFloat(priceText.replace(/[^0-9.]/g, ''));
+    expect.soft(actualPrice).toBe(expectedPrice);
+  }
+
+  async navigateBack(): Promise<void> {
+    await this.page.goBack();
   }
 }
 ```
@@ -505,10 +708,31 @@ export class ProductDetailPage extends CommonPage {
 
 **Locators Required** (from `ProductDetailLocators`):
 ```typescript
-productName: string = 'PLACEHOLDER_PRODUCT_NAME';
-productPrice: string = 'PLACEHOLDER_PRODUCT_PRICE';
-productDescription: string = 'PLACEHOLDER_PRODUCT_DESCRIPTION';
-addToCartButton: string = 'PLACEHOLDER_ADD_TO_CART_BUTTON';
+// locators/product-detail-locators.ts
+import { Locator, Page } from "@playwright/test";
+import { CommonLocators } from "./common-locators";
+
+export class ProductDetailLocators extends CommonLocators {
+  // Product detail locator properties
+  productName!: Locator;
+  productPrice!: Locator;
+  productDescription!: Locator;
+  addToCartButton!: Locator;
+
+  constructor(page: Page) {
+    super(page);
+    this.initializeLocators();
+  }
+
+  protected initializeLocators(): void {
+    super.initializeLocators();
+
+    this.productName = this.page.locator('PLACEHOLDER_PRODUCT_NAME');
+    this.productPrice = this.page.locator('PLACEHOLDER_PRODUCT_PRICE');
+    this.productDescription = this.page.locator('PLACEHOLDER_PRODUCT_DESCRIPTION');
+    this.addToCartButton = this.page.locator('PLACEHOLDER_ADD_TO_CART_BUTTON');
+  }
+}
 ```
 
 **Navigation Patterns**:
@@ -526,9 +750,66 @@ addToCartButton: string = 'PLACEHOLDER_ADD_TO_CART_BUTTON';
 
 **Class Definition**:
 ```typescript
+// pages/cart-page.ts
+import { Page } from "@playwright/test";
+import { CommonPage } from "./common-page";
+import { CartLocators } from "../locators/cart-locators";
+
 export class CartPage extends CommonPage {
+  readonly locators: CartLocators;
+
   constructor(page: Page) {
-    super(page, new CartLocators(page));
+    super(page);
+    this.locators = new CartLocators(page);
+  }
+
+  // Business-level methods
+  async getCartItems(): Promise<string[]> {
+    const rows = await this.locators.cartRow.all();
+    const items: string[] = [];
+    for (const row of rows) {
+      const nameCell = row.locator('td:nth-child(2)'); // Adjust selector as needed
+      const name = await this.getText(nameCell);
+      items.push(name);
+    }
+    return items;
+  }
+
+  async verifyProductInCart(productName: string): Promise<void> {
+    const productLocator = this.locators.getProductNameInCart(productName);
+    await expect.soft(productLocator).toBeVisible();
+  }
+
+  async verifyProductPrice(productName: string, expectedPrice: number): Promise<void> {
+    const priceLocator = this.locators.getProductPriceInCart(productName);
+    const priceText = await this.getText(priceLocator);
+    const actualPrice = parseFloat(priceText.replace(/[^0-9.]/g, ''));
+    expect.soft(actualPrice).toBe(expectedPrice);
+  }
+
+  async removeProduct(productName: string): Promise<void> {
+    const deleteButton = this.locators.getDeleteButton(productName);
+    await this.click(deleteButton);
+    await this.page.waitForTimeout(1000); // Wait for cart to update
+  }
+
+  async getTotalPrice(): Promise<number> {
+    const totalText = await this.getText(this.locators.totalPrice);
+    return parseFloat(totalText.replace(/[^0-9.]/g, ''));
+  }
+
+  async verifyTotalPrice(expectedTotal: number): Promise<void> {
+    const actualTotal = await this.getTotalPrice();
+    expect.soft(actualTotal).toBe(expectedTotal);
+  }
+
+  async clickPlaceOrder(): Promise<void> {
+    await this.click(this.locators.placeOrderButton);
+  }
+
+  async verifyCartEmpty(): Promise<void> {
+    const rowCount = await this.count(this.locators.cartRow);
+    expect.soft(rowCount).toBe(0);
   }
 }
 ```
@@ -548,13 +829,44 @@ export class CartPage extends CommonPage {
 
 **Locators Required** (from `CartLocators`):
 ```typescript
-cartTable: string = 'PLACEHOLDER_CART_TABLE';
-cartRow: string = 'PLACEHOLDER_CART_ROW';
-productNameInCart: (productName: string) => string = (name) => `PLACEHOLDER_PRODUCT_IN_CART_${name}`;
-productPriceInCart: (productName: string) => string = (name) => `PLACEHOLDER_PRICE_IN_CART_${name}`;
-deleteButton: (productName: string) => string = (name) => `PLACEHOLDER_DELETE_BUTTON_${name}`;
-totalPrice: string = 'PLACEHOLDER_TOTAL_PRICE';
-placeOrderButton: string = 'PLACEHOLDER_PLACE_ORDER_BUTTON';
+// locators/cart-locators.ts
+import { Locator, Page } from "@playwright/test";
+import { CommonLocators } from "./common-locators";
+
+export class CartLocators extends CommonLocators {
+  // Cart locator properties
+  cartTable!: Locator;
+  cartRow!: Locator;
+  totalPrice!: Locator;
+  placeOrderButton!: Locator;
+
+  constructor(page: Page) {
+    super(page);
+    this.initializeLocators();
+  }
+
+  protected initializeLocators(): void {
+    super.initializeLocators();
+
+    this.cartTable = this.page.locator('PLACEHOLDER_CART_TABLE');
+    this.cartRow = this.page.locator('PLACEHOLDER_CART_ROW');
+    this.totalPrice = this.page.locator('PLACEHOLDER_TOTAL_PRICE');
+    this.placeOrderButton = this.page.locator('PLACEHOLDER_PLACE_ORDER_BUTTON');
+  }
+
+  // Dynamic locator methods
+  getProductNameInCart(productName: string): Locator {
+    return this.page.locator(`PLACEHOLDER_PRODUCT_IN_CART_${productName}`);
+  }
+
+  getProductPriceInCart(productName: string): Locator {
+    return this.page.locator(`PLACEHOLDER_PRICE_IN_CART_${productName}`);
+  }
+
+  getDeleteButton(productName: string): Locator {
+    return this.page.locator(`PLACEHOLDER_DELETE_BUTTON_${productName}`);
+  }
+}
 ```
 
 **Navigation Patterns**:
@@ -572,9 +884,64 @@ placeOrderButton: string = 'PLACEHOLDER_PLACE_ORDER_BUTTON';
 
 **Class Definition**:
 ```typescript
+// pages/checkout-page.ts
+import { Page } from "@playwright/test";
+import { CommonPage } from "./common-page";
+import { CheckoutLocators } from "../locators/checkout-locators";
+import { CheckoutInfo } from "../interfaces/checkout-info";
+
 export class CheckoutPage extends CommonPage {
+  readonly locators: CheckoutLocators;
+
   constructor(page: Page) {
-    super(page, new CheckoutLocators(page));
+    super(page);
+    this.locators = new CheckoutLocators(page);
+  }
+
+  // Business-level methods
+  async fillCheckoutForm(info: CheckoutInfo): Promise<void> {
+    await this.waitForVisible(this.locators.checkoutModal);
+    await this.fill(this.locators.nameInput, info.name);
+    await this.fill(this.locators.countryInput, info.country);
+    await this.fill(this.locators.cityInput, info.city);
+    await this.fill(this.locators.creditCardInput, info.creditCard);
+    await this.fill(this.locators.monthInput, info.month);
+    await this.fill(this.locators.yearInput, info.year);
+  }
+
+  async clickPurchase(): Promise<void> {
+    await this.click(this.locators.purchaseButton);
+    await this.waitForVisible(this.locators.confirmationModal);
+  }
+
+  async verifyConfirmationMessage(expectedMessage: string): Promise<void> {
+    await expect.soft(this.locators.confirmationMessage).toContainText(expectedMessage);
+  }
+
+  async getOrderId(): Promise<string> {
+    const orderText = await this.getText(this.locators.orderIdText);
+    // Extract order ID from text (e.g., "Id: 12345")
+    const match = orderText.match(/Id:\s*(\d+)/);
+    return match ? match[1] : '';
+  }
+
+  async getOrderAmount(): Promise<number> {
+    const amountText = await this.getText(this.locators.amountText);
+    // Extract amount from text (e.g., "Amount: 1460 USD")
+    const match = amountText.match(/Amount:\s*(\d+)/);
+    return match ? parseFloat(match[1]) : 0;
+  }
+
+  async closeConfirmation(): Promise<void> {
+    await this.click(this.locators.confirmOkButton);
+    await this.waitForHidden(this.locators.confirmationModal);
+  }
+
+  async completeCheckout(info: CheckoutInfo): Promise<void> {
+    await this.fillCheckoutForm(info);
+    await this.clickPurchase();
+    await this.verifyConfirmationMessage('Thank you for your purchase!');
+    await this.closeConfirmation();
   }
 }
 ```
@@ -593,23 +960,56 @@ export class CheckoutPage extends CommonPage {
 
 **Locators Required** (from `CheckoutLocators`):
 ```typescript
-// Checkout form
-checkoutModal: string = 'PLACEHOLDER_CHECKOUT_MODAL';
-nameInput: string = 'PLACEHOLDER_NAME_INPUT';
-countryInput: string = 'PLACEHOLDER_COUNTRY_INPUT';
-cityInput: string = 'PLACEHOLDER_CITY_INPUT';
-creditCardInput: string = 'PLACEHOLDER_CARD_INPUT';
-monthInput: string = 'PLACEHOLDER_MONTH_INPUT';
-yearInput: string = 'PLACEHOLDER_YEAR_INPUT';
-purchaseButton: string = 'PLACEHOLDER_PURCHASE_BUTTON';
-closeCheckoutButton: string = 'PLACEHOLDER_CLOSE_CHECKOUT';
+// locators/checkout-locators.ts
+import { Locator, Page } from "@playwright/test";
+import { CommonLocators } from "./common-locators";
 
-// Confirmation modal
-confirmationModal: string = 'PLACEHOLDER_CONFIRMATION_MODAL';
-confirmationMessage: string = 'PLACEHOLDER_CONFIRMATION_MESSAGE';
-orderIdText: string = 'PLACEHOLDER_ORDER_ID';
-amountText: string = 'PLACEHOLDER_AMOUNT';
-confirmOkButton: string = 'PLACEHOLDER_CONFIRM_OK';
+export class CheckoutLocators extends CommonLocators {
+  // Checkout form locator properties
+  checkoutModal!: Locator;
+  nameInput!: Locator;
+  countryInput!: Locator;
+  cityInput!: Locator;
+  creditCardInput!: Locator;
+  monthInput!: Locator;
+  yearInput!: Locator;
+  purchaseButton!: Locator;
+  closeCheckoutButton!: Locator;
+
+  // Confirmation modal locator properties
+  confirmationModal!: Locator;
+  confirmationMessage!: Locator;
+  orderIdText!: Locator;
+  amountText!: Locator;
+  confirmOkButton!: Locator;
+
+  constructor(page: Page) {
+    super(page);
+    this.initializeLocators();
+  }
+
+  protected initializeLocators(): void {
+    super.initializeLocators();
+
+    // Checkout form locators
+    this.checkoutModal = this.page.locator('PLACEHOLDER_CHECKOUT_MODAL');
+    this.nameInput = this.page.locator('PLACEHOLDER_NAME_INPUT');
+    this.countryInput = this.page.locator('PLACEHOLDER_COUNTRY_INPUT');
+    this.cityInput = this.page.locator('PLACEHOLDER_CITY_INPUT');
+    this.creditCardInput = this.page.locator('PLACEHOLDER_CARD_INPUT');
+    this.monthInput = this.page.locator('PLACEHOLDER_MONTH_INPUT');
+    this.yearInput = this.page.locator('PLACEHOLDER_YEAR_INPUT');
+    this.purchaseButton = this.page.locator('PLACEHOLDER_PURCHASE_BUTTON');
+    this.closeCheckoutButton = this.page.locator('PLACEHOLDER_CLOSE_CHECKOUT');
+
+    // Confirmation modal locators
+    this.confirmationModal = this.page.locator('PLACEHOLDER_CONFIRMATION_MODAL');
+    this.confirmationMessage = this.page.locator('PLACEHOLDER_CONFIRMATION_MESSAGE');
+    this.orderIdText = this.page.locator('PLACEHOLDER_ORDER_ID');
+    this.amountText = this.page.locator('PLACEHOLDER_AMOUNT');
+    this.confirmOkButton = this.page.locator('PLACEHOLDER_CONFIRM_OK');
+  }
+}
 ```
 
 **Navigation Patterns**:
@@ -624,51 +1024,77 @@ confirmOkButton: string = 'PLACEHOLDER_CONFIRM_OK';
 
 ```
 CommonLocators (base class)
-├── initializeLocators()
-├── navbarHome
-├── navbarCart
-├── navbarLogin
-├── navbarLogout
-└── welcomeMessage
+├── protected page: Page
+├── constructor(page: Page)
+├── setPage(newPage: Page): void
+├── getPage(): Page
+├── protected initializeLocators(): void
+├── navbarHome: Locator
+├── navbarCart: Locator
+├── navbarLogin: Locator
+├── navbarLogout: Locator
+└── welcomeMessage: Locator
 
 ↓ extends
 
-HomeLocators
-├── inherits all CommonLocators
-├── categoryPhones
-├── categoryLaptops
-├── categoryMonitors
-└── productCard(name)
+HomeLocators extends CommonLocators
+├── inherits all CommonLocators properties
+├── categoryPhones: Locator
+├── categoryLaptops: Locator
+├── categoryMonitors: Locator
+├── constructor(page: Page)
+├── protected initializeLocators(): void (overrides)
+└── getProductCard(name: string): Locator (dynamic method)
 
-LoginLocators
-├── inherits all CommonLocators
-├── loginModal
-├── usernameInput
-├── passwordInput
-└── loginButton
+LoginLocators extends CommonLocators
+├── inherits all CommonLocators properties
+├── loginModal: Locator
+├── usernameInput: Locator
+├── passwordInput: Locator
+├── loginButton: Locator
+├── closeModalButton: Locator
+├── constructor(page: Page)
+└── protected initializeLocators(): void (overrides)
 
-ProductDetailLocators
-├── inherits all CommonLocators
-├── productName
-├── productPrice
-└── addToCartButton
+ProductDetailLocators extends CommonLocators
+├── inherits all CommonLocators properties
+├── productName: Locator
+├── productPrice: Locator
+├── productDescription: Locator
+├── addToCartButton: Locator
+├── constructor(page: Page)
+└── protected initializeLocators(): void (overrides)
 
-CartLocators
-├── inherits all CommonLocators
-├── cartTable
-├── productNameInCart(name)
-├── deleteButton(name)
-├── totalPrice
-└── placeOrderButton
+CartLocators extends CommonLocators
+├── inherits all CommonLocators properties
+├── cartTable: Locator
+├── cartRow: Locator
+├── totalPrice: Locator
+├── placeOrderButton: Locator
+├── constructor(page: Page)
+├── protected initializeLocators(): void (overrides)
+├── getProductNameInCart(name: string): Locator (dynamic method)
+├── getProductPriceInCart(name: string): Locator (dynamic method)
+└── getDeleteButton(name: string): Locator (dynamic method)
 
-CheckoutLocators
-├── inherits all CommonLocators
-├── checkoutModal
-├── nameInput, countryInput, cityInput
-├── creditCardInput, monthInput, yearInput
-├── purchaseButton
-├── confirmationModal
-└── confirmOkButton
+CheckoutLocators extends CommonLocators
+├── inherits all CommonLocators properties
+├── checkoutModal: Locator
+├── nameInput: Locator
+├── countryInput: Locator
+├── cityInput: Locator
+├── creditCardInput: Locator
+├── monthInput: Locator
+├── yearInput: Locator
+├── purchaseButton: Locator
+├── closeCheckoutButton: Locator
+├── confirmationModal: Locator
+├── confirmationMessage: Locator
+├── orderIdText: Locator
+├── amountText: Locator
+├── confirmOkButton: Locator
+├── constructor(page: Page)
+└── protected initializeLocators(): void (overrides)
 ```
 
 ---
