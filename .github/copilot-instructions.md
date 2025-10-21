@@ -14,7 +14,8 @@ This is a **Playwright TypeScript** test framework for e-commerce testing (DemoB
 
 1. **Dual Inheritance Structure**:
    - Pages extend `CommonPage` → inherit utility methods (`click`, `fill`, `waitForVisible`, etc.)
-   - Locators extend `CommonLocators` → inherit shared navbar/UI elements
+   - Locators extend `CommonLocators` → inherit framework-level locators (e.g., Japanese app tabs)
+   - Feature-specific locators define their own UI elements (e.g., DemoBlaze navbar in LoginLocators/HomeLocators)
    - Pages compose their locator class: `readonly locators: [Feature]Locators`
 
 2. **Fixture-Based Test Setup** (`tests/base-test.ts`):
@@ -139,11 +140,11 @@ export class [Feature]Locators extends CommonLocators {
 
 ```typescript
 // ✅ Correct - soft assertions
-await expect.soft(this.commonLocators.welcomeMessage).toContainText(`Welcome ${username}`);
-await expect.soft(this.commonLocators.navbarLogout).toBeVisible();
+await expect.soft(this.locators.welcomeMessage).toContainText(`Welcome ${username}`);
+await expect.soft(this.locators.navbarLogout).toBeVisible();
 
 // ❌ Wrong - hard assertions (use only when test must stop)
-await expect(this.commonLocators.welcomeMessage).toContainText(`Welcome ${username}`);
+await expect(this.locators.welcomeMessage).toContainText(`Welcome ${username}`);
 ```
 
 ### Common Method Usage
@@ -175,28 +176,24 @@ async addToCart(): Promise<void> {
 }
 ```
 
-## Critical Missing Files
+## Utility Files
 
-**IMPORTANT**: The `utils/logging.ts` file is referenced but missing. If creating new page methods with `@step` decorator:
+**Available utility files:**
 
+### `utils/logging.ts`
+Contains `@step` decorator for logging method execution in Page Objects:
 ```typescript
-// utils/logging.ts (needs to be created)
-export function step(description?: string | ((this: any, ...args: any[]) => string)) {
-  return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-    const originalMethod = descriptor.value;
-    descriptor.value = async function (...args: any[]) {
-      const stepDescription = typeof description === 'function' 
-        ? description.apply(this, args) 
-        : description || propertyKey;
-      console.log(`[STEP] ${stepDescription}`);
-      return originalMethod.apply(this, args);
-    };
-    return descriptor;
-  };
-}
+export function step(description?: string | ((this: any, ...args: any[]) => string))
 ```
 
-If `@step` decorator errors occur, the file must be created or decorators removed from `common-page.ts`.
+### `utils/helper.ts`
+Contains `Helper` class with screenshot utilities:
+```typescript
+Helper.takeScreenshot(page: Page, name: string): Promise<void>
+```
+
+### `utils/dataReader.ts`
+Data reading utilities (if needed for external test data).
 
 ## Integration Points
 
@@ -257,27 +254,32 @@ If `@step` decorator errors occur, the file must be created or decorators remove
 - `navigate(url, options)` - with load state
 - `hover(locator)`, `check(locator)`, `uncheck(locator)`
 
-### Accessing common navbar elements:
+### Accessing locators:
 ```typescript
-// DemoBlaze navbar elements are now in feature-specific locators (not in CommonLocators)
+// ⚠️ IMPORTANT: DemoBlaze navbar elements are in FEATURE-SPECIFIC locators, NOT CommonLocators
+
 // For LoginPage/LoginLocators:
+this.locators.navbarHome       // DemoBlaze Home link
+this.locators.navbarCart       // DemoBlaze Cart link
+this.locators.navbarLogin      // DemoBlaze Login button
+this.locators.navbarLogout     // DemoBlaze Logout button
+this.locators.welcomeMessage   // DemoBlaze welcome message
+
+// For HomePage/HomeLocators (same navbar elements):
 this.locators.navbarHome
 this.locators.navbarCart
 this.locators.navbarLogin
 this.locators.navbarLogout
 this.locators.welcomeMessage
 
-// For HomePage/HomeLocators:
-this.locators.navbarHome
-this.locators.navbarCart
-this.locators.navbarLogin
-this.locators.navbarLogout
-this.locators.welcomeMessage
+// CommonLocators contains ONLY framework-level locators (Japanese app):
+this.commonLocators.planManagementTab     // プラン管理
+this.commonLocators.contractCompanyTab    // 契約企業管理
+this.commonLocators.settingsTab           // 各種設定
 
-// CommonLocators now contains Japanese app specific locators:
-this.commonLocators.planManagementTab
-this.commonLocators.contractCompanyTab
-this.commonLocators.settingsTab
+// ❌ WRONG - these DO NOT exist in CommonLocators:
+this.commonLocators.navbarHome      // ERROR!
+this.commonLocators.welcomeMessage  // ERROR!
 ```
 
 ### Test structure template:
