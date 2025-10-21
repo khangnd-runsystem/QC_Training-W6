@@ -1,8 +1,8 @@
 import { test, expect } from './base-test';
-import { BASE_URL, URLS } from '../constants/urls';
-import { PRODUCTS } from '../data/products';
-import { CHECKOUT_DATA } from '../data/checkout-data';
-import { MESSAGES } from '../constants/messages';
+import { BASE_URL, URLS } from '../../constants/urls';
+import { PRODUCTS } from '../../data/products';
+import { CHECKOUT_DATA } from '../../data/checkout-data';
+import { MESSAGES } from '../../constants/messages';
 
 /**
  * TC3: Checkout Test Suite

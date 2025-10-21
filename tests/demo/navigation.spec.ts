@@ -1,9 +1,9 @@
 import { test, expect } from './base-test';
-import { BASE_URL } from '../constants/urls';
-import { VALID_USER } from '../data/users';
-import { PRODUCTS } from '../data/products';
-import { CHECKOUT_DATA } from '../data/checkout-data';
-import { MESSAGES } from '../constants/messages';
+import { BASE_URL } from '../../constants/urls';
+import { VALID_USER } from '../../data/users';
+import { PRODUCTS } from '../../data/products';
+import { CHECKOUT_DATA } from '../../data/checkout-data';
+import { MESSAGES } from '../../constants/messages';
 
 /**
  * TC5: End-to-End Navigation Test Suite

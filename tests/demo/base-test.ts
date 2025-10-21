@@ -1,11 +1,11 @@
 import { test as base } from '@playwright/test';
-import { LoginPage } from '../pages/login-page';
-import { HomePage } from '../pages/home-page';
-import { ProductDetailPage } from '../pages/product-detail-page';
-import { CartPage } from '../pages/cart-page';
-import { CheckoutPage } from '../pages/checkout-page';
-import { VALID_USER } from '../data/users';
-import { BASE_URL } from '../constants/urls';
+import { LoginPage } from '../../pages/login-page';
+import { HomePage } from '../../pages/home-page';
+import { ProductDetailPage } from '../../pages/product-detail-page';
+import { CartPage } from '../../pages/cart-page';
+import { CheckoutPage } from '../../pages/checkout-page';
+import { VALID_USER } from '../../data/users';
+import { BASE_URL } from '../../constants/urls';
 
 type PageFixtures = {
   loginPage: LoginPage;

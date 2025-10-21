@@ -1,6 +1,6 @@
 import { test, expect } from './base-test';
-import { BASE_URL } from '../constants/urls';
-import { VALID_USER } from '../data/users';
+import { BASE_URL } from '../../constants/urls';
+import { VALID_USER } from '../../data/users';
 
 /**
  * TC1: Login Test Suite

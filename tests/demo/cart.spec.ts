@@ -1,6 +1,6 @@
 import { test, expect } from './base-test';
-import { BASE_URL, URLS } from '../constants/urls';
-import { PRODUCTS } from '../data/products';
+import { BASE_URL, URLS } from '../../constants/urls';
+import { PRODUCTS } from '../../data/products';
 
 /**
  * TC2 & TC4: Cart Management Test Suite
