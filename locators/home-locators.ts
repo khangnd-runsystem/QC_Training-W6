@@ -23,20 +23,20 @@ export class HomeLocators extends CommonLocators {
     super.initializeLocators();
 
     // DemoBlaze navbar locators
-    this.navbarHome = this.page.locator('a.nav-link:has-text("Home")');
-    this.navbarCart = this.page.locator('a#cartur');
-    this.navbarLogin = this.page.locator('a#login2');
-    this.navbarLogout = this.page.locator('a#logout2');
-    this.welcomeMessage = this.page.locator('a#nameofuser');
+    this.navbarHome = this.page.locator('//a[@class="nav-link" and contains(text(), "Home")]');
+    this.navbarCart = this.page.locator('//a[@id="cartur"]');
+    this.navbarLogin = this.page.locator('//a[@id="login2"]');
+    this.navbarLogout = this.page.locator('//a[@id="logout2"]');
+    this.welcomeMessage = this.page.locator('//a[@id="nameofuser"]');
 
     // Category locators
-    this.categoryPhones = this.page.locator('a:has-text("Phones")');
-    this.categoryLaptops = this.page.locator('a:has-text("Laptops")');
-    this.categoryMonitors = this.page.locator('a:has-text("Monitors")');
+    this.categoryPhones = this.page.locator('//a[contains(text(), "Phones")]');
+    this.categoryLaptops = this.page.locator('//a[contains(text(), "Laptops")]');
+    this.categoryMonitors = this.page.locator('//a[contains(text(), "Monitors")]');
   }
 
   // Dynamic locator methods
   getProductCard(productName: string): Locator {
-    return this.page.locator(`.card-title a:has-text("${productName}")`);
+    return this.page.locator(`//div[@class="card-title"]//a[contains(text(), "${productName}")]`);
   }
 }

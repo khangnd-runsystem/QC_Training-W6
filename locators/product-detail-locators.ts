@@ -16,9 +16,9 @@ export class ProductDetailLocators extends CommonLocators {
   protected initializeLocators(): void {
     super.initializeLocators();
 
-    this.productName = this.page.locator('h2.name');
-    this.productPrice = this.page.locator('h3.price-container');
-    this.productDescription = this.page.locator('#more-information');
-    this.addToCartButton = this.page.locator('a:has-text("Add to cart")');
+    this.productName = this.page.locator('//h2[@class="name"]');
+    this.productPrice = this.page.locator('//h3[@class="price-container"]');
+    this.productDescription = this.page.locator('//div[@id="more-information"]');
+    this.addToCartButton = this.page.locator('//a[contains(text(), "Add to cart")]');
   }
 }

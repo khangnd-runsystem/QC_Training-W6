@@ -29,21 +29,21 @@ export class CheckoutLocators extends CommonLocators {
     super.initializeLocators();
 
     // Checkout form locators
-    this.checkoutModal = this.page.locator('#orderModal');
-    this.nameInput = this.page.locator('#name');
-    this.countryInput = this.page.locator('#country');
-    this.cityInput = this.page.locator('#city');
-    this.creditCardInput = this.page.locator('#card');
-    this.monthInput = this.page.locator('#month');
-    this.yearInput = this.page.locator('#year');
-    this.purchaseButton = this.page.locator('button:has-text("Purchase")');
-    this.closeCheckoutButton = this.page.locator('#orderModal .close');
+    this.checkoutModal = this.page.locator('//div[@id="orderModal"]');
+    this.nameInput = this.page.locator('//input[@id="name"]');
+    this.countryInput = this.page.locator('//input[@id="country"]');
+    this.cityInput = this.page.locator('//input[@id="city"]');
+    this.creditCardInput = this.page.locator('//input[@id="card"]');
+    this.monthInput = this.page.locator('//input[@id="month"]');
+    this.yearInput = this.page.locator('//input[@id="year"]');
+    this.purchaseButton = this.page.locator('//button[contains(text(), "Purchase")]');
+    this.closeCheckoutButton = this.page.locator('//div[@id="orderModal"]//button[@class="close"]');
 
     // Confirmation modal locators
-    this.confirmationModal = this.page.locator('.sweet-alert');
-    this.confirmationMessage = this.page.locator('.sweet-alert h2');
-    this.orderIdText = this.page.locator('.sweet-alert p');
-    this.amountText = this.page.locator('.sweet-alert p');
-    this.confirmOkButton = this.page.locator('.sweet-alert button');
+    this.confirmationModal = this.page.locator('//div[contains(@class, "sweet-alert")]');
+    this.confirmationMessage = this.page.locator('//div[contains(@class, "sweet-alert")]//h2');
+    this.orderIdText = this.page.locator('//div[contains(@class, "sweet-alert")]//p');
+    this.amountText = this.page.locator('//div[contains(@class, "sweet-alert")]//p');
+    this.confirmOkButton = this.page.locator('//div[contains(@class, "sweet-alert")]//button');
   }
 }

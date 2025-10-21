@@ -16,22 +16,22 @@ export class CartLocators extends CommonLocators {
   protected initializeLocators(): void {
     super.initializeLocators();
 
-    this.cartTable = this.page.locator('#tbodyid');
-    this.cartRow = this.page.locator('#tbodyid tr');
-    this.totalPrice = this.page.locator('#totalp');
-    this.placeOrderButton = this.page.locator('button:has-text("Place Order")');
+    this.cartTable = this.page.locator('//tbody[@id="tbodyid"]');
+    this.cartRow = this.page.locator('//tbody[@id="tbodyid"]//tr');
+    this.totalPrice = this.page.locator('//h3[@id="totalp"]');
+    this.placeOrderButton = this.page.locator('//button[contains(text(), "Place Order")]');
   }
 
   // Dynamic locator methods
   getProductNameInCart(productName: string): Locator {
-    return this.page.locator(`#tbodyid tr:has-text("${productName}") td:nth-child(2)`);
+    return this.page.locator(`//tbody[@id="tbodyid"]//tr[contains(., "${productName}")]//td[2]`);
   }
 
   getProductPriceInCart(productName: string): Locator {
-    return this.page.locator(`#tbodyid tr:has-text("${productName}") td:nth-child(3)`);
+    return this.page.locator(`//tbody[@id="tbodyid"]//tr[contains(., "${productName}")]//td[3]`);
   }
 
   getDeleteButton(productName: string): Locator {
-    return this.page.locator(`#tbodyid tr:has-text("${productName}") a:has-text("Delete")`);
+    return this.page.locator(`//tbody[@id="tbodyid"]//tr[contains(., "${productName}")]//a[contains(text(), "Delete")]`);
   }
 }

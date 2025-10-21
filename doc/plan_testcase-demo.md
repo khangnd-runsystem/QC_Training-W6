@@ -432,6 +432,8 @@ export const cartWithItems = authenticatedUser.extend({
 ---
 
 ## 4. Page Objects Definition
+### Get Locator
+*** Important: Use Xpath to get Locators
 
 ### 4.1 LoginPage
 

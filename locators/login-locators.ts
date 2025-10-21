@@ -25,17 +25,17 @@ export class LoginLocators extends CommonLocators {
     super.initializeLocators();
 
     // DemoBlaze navbar locators
-    this.navbarHome = this.page.locator('a.nav-link:has-text("Home")');
-    this.navbarCart = this.page.locator('a#cartur');
-    this.navbarLogin = this.page.locator('a#login2');
-    this.navbarLogout = this.page.locator('a#logout2');
-    this.welcomeMessage = this.page.locator('a#nameofuser');
+    this.navbarHome = this.page.locator('//a[@class="nav-link" and contains(text(), "Home")]');
+    this.navbarCart = this.page.locator('//a[@id="cartur"]');
+    this.navbarLogin = this.page.locator('//a[@id="login2"]');
+    this.navbarLogout = this.page.locator('//a[@id="logout2"]');
+    this.welcomeMessage = this.page.locator('//a[@id="nameofuser"]');
     
     // Login modal locators
-    this.loginModal = this.page.locator('#logInModal');
-    this.usernameInput = this.page.locator('#loginusername');
-    this.passwordInput = this.page.locator('#loginpassword');
-    this.loginButton = this.page.locator('button:has-text("Log in")').nth(1);
-    this.closeModalButton = this.page.locator('#logInModal .close');
+    this.loginModal = this.page.locator('//div[@id="logInModal"]');
+    this.usernameInput = this.page.locator('//input[@id="loginusername"]');
+    this.passwordInput = this.page.locator('//input[@id="loginpassword"]');
+    this.loginButton = this.page.locator('(//button[contains(text(), "Log in")])[2]');
+    this.closeModalButton = this.page.locator('//div[@id="logInModal"]//button[@class="close"]');
   }
 }
