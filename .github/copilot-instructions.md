@@ -259,12 +259,25 @@ If `@step` decorator errors occur, the file must be created or decorators remove
 
 ### Accessing common navbar elements:
 ```typescript
-// Available in all locator classes through inheritance
-this.commonLocators.navbarHome
-this.commonLocators.navbarCart
-this.commonLocators.navbarLogin
-this.commonLocators.navbarLogout
-this.commonLocators.welcomeMessage
+// DemoBlaze navbar elements are now in feature-specific locators (not in CommonLocators)
+// For LoginPage/LoginLocators:
+this.locators.navbarHome
+this.locators.navbarCart
+this.locators.navbarLogin
+this.locators.navbarLogout
+this.locators.welcomeMessage
+
+// For HomePage/HomeLocators:
+this.locators.navbarHome
+this.locators.navbarCart
+this.locators.navbarLogin
+this.locators.navbarLogout
+this.locators.welcomeMessage
+
+// CommonLocators now contains Japanese app specific locators:
+this.commonLocators.planManagementTab
+this.commonLocators.contractCompanyTab
+this.commonLocators.settingsTab
 ```
 
 ### Test structure template:

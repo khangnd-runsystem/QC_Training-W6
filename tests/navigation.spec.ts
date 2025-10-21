@@ -80,7 +80,7 @@ test.describe('End-to-End Shopping Flow', () => {
     await homePage.clickLogout();
 
     // Expected Result 4: User logs out and sees [Log in] option again
-    await expect.soft(loginPage.commonLocators.navbarLogin).toBeVisible();
-    await expect.soft(loginPage.commonLocators.navbarLogout).toBeHidden();
+    await expect.soft(loginPage.locators.navbarLogin).toBeVisible();
+    await expect.soft(loginPage.locators.navbarLogout).toBeHidden();
   });
 });

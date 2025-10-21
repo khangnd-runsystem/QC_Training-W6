@@ -35,18 +35,18 @@ export class HomePage extends CommonPage {
   }
 
   async navigateToCart(): Promise<void> {
-    await this.click(this.commonLocators.navbarCart);
+    await this.click(this.locators.navbarCart);
   }
 
   async navigateToHome(): Promise<void> {
-    await this.click(this.commonLocators.navbarHome);
+    await this.click(this.locators.navbarHome);
   }
 
   async clickLogout(): Promise<void> {
-    await this.click(this.commonLocators.navbarLogout);
+    await this.click(this.locators.navbarLogout);
   }
 
   async verifyWelcomeMessage(username: string): Promise<void> {
-    await expect.soft(this.commonLocators.welcomeMessage).toContainText(`Welcome ${username}`);
+    await expect.soft(this.locators.welcomeMessage).toContainText(`Welcome ${username}`);
   }
 }

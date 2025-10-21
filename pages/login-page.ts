@@ -13,7 +13,7 @@ export class LoginPage extends CommonPage {
 
   // Business-level methods
   async openLoginModal(): Promise<void> {
-    await this.click(this.commonLocators.navbarLogin);
+    await this.click(this.locators.navbarLogin);
     await this.waitForVisible(this.locators.loginModal);
   }
 
@@ -26,14 +26,14 @@ export class LoginPage extends CommonPage {
   }
 
   async verifyLoginSuccess(username: string): Promise<void> {
-    await expect.soft(this.commonLocators.welcomeMessage).toContainText(`Welcome ${username}`);
+    await expect.soft(this.locators.welcomeMessage).toContainText(`Welcome ${username}`);
   }
 
   async verifyLogoutButtonVisible(): Promise<void> {
-    await expect.soft(this.commonLocators.navbarLogout).toBeVisible();
+    await expect.soft(this.locators.navbarLogout).toBeVisible();
   }
 
   async verifyLoginButtonHidden(): Promise<void> {
-    await expect.soft(this.commonLocators.navbarLogin).toBeHidden();
+    await expect.soft(this.locators.navbarLogin).toBeHidden();
   }
 }

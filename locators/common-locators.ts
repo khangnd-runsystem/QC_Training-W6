@@ -2,6 +2,9 @@ import { Locator, Page } from "@playwright/test";
 
 export class CommonLocators {
   protected page: Page;
+  planManagementTab!: Locator;
+  contractCompanyTab!: Locator;
+  settingsTab!: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -19,19 +22,15 @@ export class CommonLocators {
     return this.page;
   }
 
-  // Common locator properties - shared across all pages
-  navbarHome!: Locator;
-  navbarCart!: Locator;
-  navbarLogin!: Locator;
-  navbarLogout!: Locator;
-  welcomeMessage!: Locator;
-
   protected initializeLocators(): void {
-    // Initialize common selectors used across multiple pages
-    this.navbarHome = this.page.locator('a.nav-link:has-text("Home")');
-    this.navbarCart = this.page.locator('a#cartur');
-    this.navbarLogin = this.page.locator('a#login2');
-    this.navbarLogout = this.page.locator('a#logout2');
-    this.welcomeMessage = this.page.locator('a#nameofuser');
+    this.planManagementTab = this.page.locator(
+      '//div[@class="hr-sidebar__menu"]//div[text()="プラン管理"]'
+    );
+    this.contractCompanyTab = this.page.locator(
+      '//div[@class="hr-sidebar__menu"]//div[text()="契約企業管理"]'
+    );
+    this.settingsTab = this.page.locator(
+      '//div[@class="hr-sidebar__menu"]//div[text()="各種設定"]'
+    );
   }
 }
