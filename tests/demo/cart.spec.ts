@@ -8,6 +8,31 @@ import { PRODUCTS } from '../../data/products';
 test.describe('Shopping Cart Management', () => {
 
   /**
+   * Setup: Clear cart before each test
+   */
+  test.beforeEach(async ({ page, authenticatedPage }) => {
+    const { homePage, cartPage } = authenticatedPage;
+    
+    // Navigate to base URL
+    await page.goto(BASE_URL);
+    await page.waitForLoadState('domcontentloaded');
+    
+    // Go to Cart
+    await homePage.navigateToCart();
+    await page.waitForTimeout(500);
+    
+    // Delete all products in cart
+    const items = await cartPage.getCartItems();
+    for (const item of items) {
+      await cartPage.removeProduct(item);
+    }
+    
+    // Return to homepage
+    await homePage.navigateToHome();
+    await page.waitForTimeout(500);
+  });
+
+  /**
    * TC2: Add Multiple Items
    * Test Case ID: TC2
    * Item Main: Cart
