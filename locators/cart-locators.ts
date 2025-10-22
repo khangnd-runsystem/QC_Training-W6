@@ -34,4 +34,9 @@ export class CartLocators extends CommonLocators {
   getDeleteButton(productName: string): Locator {
     return this.page.locator(`//tbody[@id="tbodyid"]//td[text() = "${productName}"]//following-sibling::td//a[text() = 'Delete']`);
   }
+
+  // Get first delete button in cart (for clearing cart without knowing product names)
+  getFirstDeleteButton(): Locator {
+    return this.page.locator('//tbody[@id="tbodyid"]//tr[1]//a[text() = "Delete"]');
+  }
 }

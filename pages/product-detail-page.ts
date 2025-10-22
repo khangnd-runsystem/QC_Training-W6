@@ -19,6 +19,7 @@ export class ProductDetailPage extends CommonPage {
       expect.soft(dialog.message()).toContain(MESSAGES.PRODUCT_ADDED);
       await dialog.accept();
     });
+    await this.page.waitForTimeout(2000); // Wait for alert to be handled
     
     await this.click(this.locators.addToCartButton);
     await this.page.waitForTimeout(500); // Wait for alert to be handled

@@ -23,11 +23,13 @@ export class CartPage extends CommonPage {
   }
 
   async verifyProductInCart(productName: string): Promise<void> {
+    await this.page.waitForTimeout(5000);
     const productLocator = this.locators.getProductNameInCart(productName);
     await expect.soft(productLocator).toBeVisible();
   }
 
   async verifyProductPrice(productName: string, expectedPrice: number): Promise<void> {
+    await this.page.waitForTimeout(5000);
     const priceLocator = this.locators.getProductPriceInCart(productName);
     const priceText = await this.getText(priceLocator);
     const actualPrice = parseFloat(priceText.replace(/[^0-9.]/g, ''));
@@ -46,6 +48,7 @@ export class CartPage extends CommonPage {
   }
 
   async verifyTotalPrice(expectedTotal: number): Promise<void> {
+    await this.page.waitForTimeout(5000);
     const actualTotal = await this.getTotalPrice();
     expect.soft(actualTotal).toBe(expectedTotal);
   }
@@ -57,5 +60,22 @@ export class CartPage extends CommonPage {
   async verifyCartEmpty(): Promise<void> {
     const rowCount = await this.count(this.locators.cartRow);
     expect.soft(rowCount).toBe(0);
+  }
+
+  /**
+   * Clear all items from cart by removing the first item repeatedly
+   * This avoids issues with duplicate product names
+   */
+  async clearCart(): Promise<void> {
+    await this.page.waitForTimeout(5000); // Wait for cart to update
+
+    let itemCount = await this.count(this.locators.cartRow);
+    
+    while (itemCount > 0) {
+      const firstDeleteButton = this.locators.getFirstDeleteButton();
+      await this.click(firstDeleteButton);
+      await this.page.waitForTimeout(5000); // Wait for cart to update
+      itemCount = await this.count(this.locators.cartRow);
+    }
   }
 }

@@ -19,17 +19,14 @@ test.describe('Shopping Cart Management', () => {
     
     // Go to Cart
     await homePage.navigateToCart();
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(1000);
     
-    // Delete all products in cart
-    const items = await cartPage.getCartItems();
-    for (const item of items) {
-      await cartPage.removeProduct(item);
-    }
+    // Clear all products in cart (handles duplicate product names)
+    await cartPage.clearCart();
     
     // Return to homepage
     await homePage.navigateToHome();
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(2000);
   });
 
   /**
@@ -39,7 +36,7 @@ test.describe('Shopping Cart Management', () => {
    * Item Sub: Add Multiple Items
    * Description: Verify adding multiple products from different categories to cart
    */
-  test.skip('TC002 - Add multiple products to cart - when selecting items from different categories - all selected products appear in cart', async ({ 
+  test('TC002 - Add multiple products to cart - when selecting items from different categories - all selected products appear in cart', async ({ 
     page,
     authenticatedPage 
   }) => {
@@ -61,7 +58,7 @@ test.describe('Shopping Cart Management', () => {
 
     // Step 4: Click [Home] from navbar
     await homePage.navigateToHome();
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(5000);
 
     // Step 5: Click category [Laptops]
     await homePage.selectCategory('Laptops');
@@ -71,6 +68,7 @@ test.describe('Shopping Cart Management', () => {
 
     // Step 7: Click [Add to cart], accept alert
     await productDetailPage.addToCart();
+    await homePage.navigateToHome();
 
     // Step 8: Click [Cart]
     await homePage.navigateToCart();
@@ -121,6 +119,8 @@ test.describe('Shopping Cart Management', () => {
     await page.waitForTimeout(500);
     // Step 1: Go to [Cart]
     await homePage.navigateToCart();
+    await page.waitForTimeout(5000);
+
 
     // Step 2: Verify both items are displayed
     await cartPage.verifyProductInCart(PRODUCTS.SONY_XPERIA_Z5.name);
