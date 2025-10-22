@@ -21,6 +21,7 @@ test.describe('Shopping Cart Management', () => {
     const { homePage, productDetailPage, cartPage } = authenticatedPage;
 
     await page.goto(BASE_URL);
+    await page.waitForLoadState('domcontentloaded');
 
     // Step 1: From Home page, click category [Phones]
     await homePage.selectCategory('Phones');
@@ -74,6 +75,7 @@ test.describe('Shopping Cart Management', () => {
     const { homePage, productDetailPage, cartPage } = authenticatedPage;
 
     await page.goto(BASE_URL);
+    await page.waitForLoadState('domcontentloaded');
 
     // Precondition: Add 2 products into cart
     // Add Sony xperia z5

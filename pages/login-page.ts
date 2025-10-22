@@ -23,9 +23,12 @@ export class LoginPage extends CommonPage {
     await this.fill(this.locators.passwordInput, credentials.password);
     await this.click(this.locators.loginButton);
     await this.waitForHidden(this.locators.loginModal);
+    // Wait for welcome message to appear after successful login
+    await this.waitForVisible(this.locators.welcomeMessage);
   }
 
   async verifyLoginSuccess(username: string): Promise<void> {
+    await this.waitForVisible(this.locators.welcomeMessage);
     await expect.soft(this.locators.welcomeMessage).toContainText(`Welcome ${username}`);
   }
 

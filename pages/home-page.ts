@@ -25,12 +25,14 @@ export class HomePage extends CommonPage {
         break;
     }
     await this.click(categoryLocator);
-    await this.page.waitForTimeout(1000); // Wait for product list to update
+    // Wait longer for product list to update via AJAX
+    await this.page.waitForTimeout(2000);
   }
 
   async selectProduct(productName: string): Promise<void> {
     const productLocator = this.locators.getProductCard(productName);
-    await this.waitForVisible(productLocator);
+    // Use a longer timeout for product cards to appear after category selection
+    await productLocator.waitFor({ state: 'visible', timeout: 60000 });
     await this.click(productLocator);
   }
 

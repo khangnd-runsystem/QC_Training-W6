@@ -63,6 +63,7 @@ export const test = base.extend<PageFixtures>({
 
     // Navigate to home page and login
     await page.goto(BASE_URL);
+    await page.waitForLoadState('domcontentloaded'); // Wait for page to fully load
     await loginPage.loginWithValidAccount(VALID_USER);
     
     // Provide all page objects to the test

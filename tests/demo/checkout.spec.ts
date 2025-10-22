@@ -20,6 +20,7 @@ test.describe('Checkout Process', () => {
     const { homePage, productDetailPage, cartPage, checkoutPage } = authenticatedPage;
 
     await page.goto(BASE_URL);
+    await page.waitForLoadState('domcontentloaded');
 
     // Precondition: Add at least 1 product to cart
     await homePage.selectCategory('Phones');

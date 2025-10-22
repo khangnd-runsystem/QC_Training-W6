@@ -23,6 +23,7 @@ test.describe('End-to-End Shopping Flow', () => {
     checkoutPage
   }) => {
     await page.goto(BASE_URL);
+    await page.waitForLoadState('domcontentloaded');
 
     // Step 1: Login with valid user
     await loginPage.loginWithValidAccount(VALID_USER);

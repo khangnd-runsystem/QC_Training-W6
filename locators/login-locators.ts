@@ -35,7 +35,7 @@ export class LoginLocators extends CommonLocators {
     this.loginModal = this.page.locator('//div[@id="logInModal"]');
     this.usernameInput = this.page.locator('//input[@id="loginusername"]');
     this.passwordInput = this.page.locator('//input[@id="loginpassword"]');
-    this.loginButton = this.page.locator('(//button[contains(text(), "Log in")])[2]');
+    this.loginButton = this.page.locator('//div[@id="logInModal"]//button[contains(text(), "Log in")]');
     this.closeModalButton = this.page.locator('//div[@id="logInModal"]//button[@class="close"]');
   }
 }
