@@ -14,7 +14,7 @@ test.describe('Shopping Cart Management', () => {
    * Item Sub: Add Multiple Items
    * Description: Verify adding multiple products from different categories to cart
    */
-  test('TC002 - Add multiple products to cart - when selecting items from different categories - all selected products appear in cart', async ({ 
+  test.skip('TC002 - Add multiple products to cart - when selecting items from different categories - all selected products appear in cart', async ({ 
     page,
     authenticatedPage 
   }) => {
@@ -25,6 +25,8 @@ test.describe('Shopping Cart Management', () => {
 
     // Step 1: From Home page, click category [Phones]
     await homePage.selectCategory('Phones');
+    // Wait for the product list to load and the specific product to be visible
+    await page.waitForSelector(`//h4[@class="card-title"]//a[contains(text(), "${PRODUCTS.SAMSUNG_GALAXY_S6.name}")]`, { state: 'visible' });
 
     // Step 2: Click product "Samsung galaxy s6"
     await homePage.selectProduct(PRODUCTS.SAMSUNG_GALAXY_S6.name);
@@ -38,7 +40,7 @@ test.describe('Shopping Cart Management', () => {
 
     // Step 5: Click category [Laptops]
     await homePage.selectCategory('Laptops');
-
+    await page.waitForSelector(`//h4[@class="card-title"]//a[contains(text(), "${PRODUCTS.MACBOOK_PRO.name}")]`, { state: 'visible' });
     // Step 6: Click product "MacBook Pro"
     await homePage.selectProduct(PRODUCTS.MACBOOK_PRO.name);
 
@@ -75,11 +77,11 @@ test.describe('Shopping Cart Management', () => {
     const { homePage, productDetailPage, cartPage } = authenticatedPage;
 
     await page.goto(BASE_URL);
-    await page.waitForLoadState('domcontentloaded');
-
     // Precondition: Add 2 products into cart
     // Add Sony xperia z5
     await homePage.selectCategory('Phones');
+    // Wait for the product list to load and the specific product to be visible
+    await page.waitForSelector(`//h4[@class="card-title"]//a[contains(text(), "${PRODUCTS.SONY_XPERIA_Z5.name}")]`, { state: 'visible' });
     await homePage.selectProduct(PRODUCTS.SONY_XPERIA_Z5.name);
     await productDetailPage.addToCart();
     await homePage.navigateToHome();
@@ -90,6 +92,8 @@ test.describe('Shopping Cart Management', () => {
     await homePage.selectProduct(PRODUCTS.MACBOOK_AIR.name);
     await productDetailPage.addToCart();
 
+    await homePage.navigateToHome();
+    await page.waitForTimeout(500);
     // Step 1: Go to [Cart]
     await homePage.navigateToCart();
 

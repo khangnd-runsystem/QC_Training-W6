@@ -17,7 +17,7 @@ export const PRODUCTS: { [key: string]: ProductInfo } = {
     price: 320
   },
   MACBOOK_AIR: {
-    name: 'MacBook Air',
+    name: 'MacBook air',
     category: 'Laptops',
     price: 700
   },

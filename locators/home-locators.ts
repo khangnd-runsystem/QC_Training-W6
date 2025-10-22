@@ -37,6 +37,6 @@ export class HomeLocators extends CommonLocators {
 
   // Dynamic locator methods
   getProductCard(productName: string): Locator {
-    return this.page.locator(`//div[@class="card-title"]//a[contains(text(), "${productName}")]`);
+    return this.page.locator(`//h4[@class="card-title"]//a[contains(text(), "${productName}")]`);
   }
 }

@@ -32,7 +32,7 @@ export class HomePage extends CommonPage {
   async selectProduct(productName: string): Promise<void> {
     const productLocator = this.locators.getProductCard(productName);
     // Use a longer timeout for product cards to appear after category selection
-    await productLocator.waitFor({ state: 'visible', timeout: 60000 });
+    await productLocator.waitFor({ state: 'visible', timeout: 30000 });
     await this.click(productLocator);
   }
 
