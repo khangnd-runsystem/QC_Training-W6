@@ -26,7 +26,7 @@ export class HomePage extends CommonPage {
     }
     await this.click(categoryLocator);
     // Wait longer for product list to update via AJAX
-    await this.page.waitForTimeout(2000);
+    await this.page.waitForLoadState('networkidle');
   }
 
   async selectProduct(productName: string): Promise<void> {

@@ -23,13 +23,13 @@ export class CartPage extends CommonPage {
   }
 
   async verifyProductInCart(productName: string): Promise<void> {
-    await this.page.waitForTimeout(5000);
+    await this.page.waitForLoadState('networkidle');
     const productLocator = this.locators.getProductNameInCart(productName);
     await expect.soft(productLocator).toBeVisible();
   }
 
   async verifyProductPrice(productName: string, expectedPrice: number): Promise<void> {
-    await this.page.waitForTimeout(5000);
+    await this.page.waitForLoadState('networkidle');
     const priceLocator = this.locators.getProductPriceInCart(productName);
     const priceText = await this.getText(priceLocator);
     const actualPrice = parseFloat(priceText.replace(/[^0-9.]/g, ''));
@@ -39,7 +39,7 @@ export class CartPage extends CommonPage {
   async removeProduct(productName: string): Promise<void> {
     const deleteButton = this.locators.getDeleteButton(productName);
     await this.click(deleteButton);
-    await this.page.waitForTimeout(1000); // Wait for cart to update
+    await this.page.waitForLoadState('networkidle');
   }
 
   async getTotalPrice(): Promise<number> {
@@ -48,7 +48,7 @@ export class CartPage extends CommonPage {
   }
 
   async verifyTotalPrice(expectedTotal: number): Promise<void> {
-    await this.page.waitForTimeout(5000);
+    await this.page.waitForLoadState('networkidle');
     const actualTotal = await this.getTotalPrice();
     expect.soft(actualTotal).toBe(expectedTotal);
   }
@@ -67,14 +67,14 @@ export class CartPage extends CommonPage {
    * This avoids issues with duplicate product names
    */
   async clearCart(): Promise<void> {
-    await this.page.waitForTimeout(5000); // Wait for cart to update
+    await this.page.waitForLoadState('networkidle');
 
     let itemCount = await this.count(this.locators.cartRow);
     
     while (itemCount > 0) {
       const firstDeleteButton = this.locators.getFirstDeleteButton();
       await this.click(firstDeleteButton);
-      await this.page.waitForTimeout(5000); // Wait for cart to update
+      await this.page.waitForLoadState('networkidle');
       itemCount = await this.count(this.locators.cartRow);
     }
   }

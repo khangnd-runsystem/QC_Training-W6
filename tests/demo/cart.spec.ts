@@ -15,18 +15,18 @@ test.describe('Shopping Cart Management', () => {
     
     // Navigate to base URL
     await page.goto(BASE_URL);
-    await page.waitForLoadState('domcontentloaded');
+    await page.waitForLoadState('networkidle');
     
     // Go to Cart
     await homePage.navigateToCart();
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState('networkidle');
     
     // Clear all products in cart (handles duplicate product names)
     await cartPage.clearCart();
     
     // Return to homepage
     await homePage.navigateToHome();
-    await page.waitForTimeout(2000);
+    await page.waitForLoadState('networkidle');
   });
 
   /**
@@ -43,12 +43,15 @@ test.describe('Shopping Cart Management', () => {
     const { homePage, productDetailPage, cartPage } = authenticatedPage;
 
     await page.goto(BASE_URL);
-    await page.waitForLoadState('domcontentloaded');
+    await page.waitForLoadState('networkidle');
 
     // Step 1: From Home page, click category [Phones]
     await homePage.selectCategory('Phones');
     // Wait for the product list to load and the specific product to be visible
-    await page.waitForSelector(`//h4[@class="card-title"]//a[contains(text(), "${PRODUCTS.SAMSUNG_GALAXY_S6.name}")]`, { state: 'visible' });
+    await page.waitForSelector(`//h4[@class="card-title"]//a[contains(text(), "${PRODUCTS.SAMSUNG_GALAXY_S6.name}")]`, { 
+      state: 'visible',
+      timeout: 10000 
+    });
 
     // Step 2: Click product "Samsung galaxy s6"
     await homePage.selectProduct(PRODUCTS.SAMSUNG_GALAXY_S6.name);
@@ -58,11 +61,14 @@ test.describe('Shopping Cart Management', () => {
 
     // Step 4: Click [Home] from navbar
     await homePage.navigateToHome();
-    await page.waitForTimeout(5000);
+    await page.waitForLoadState('networkidle');
 
     // Step 5: Click category [Laptops]
     await homePage.selectCategory('Laptops');
-    await page.waitForSelector(`//h4[@class="card-title"]//a[contains(text(), "${PRODUCTS.MACBOOK_PRO.name}")]`, { state: 'visible' });
+    await page.waitForSelector(`//h4[@class="card-title"]//a[contains(text(), "${PRODUCTS.MACBOOK_PRO.name}")]`, { 
+      state: 'visible',
+      timeout: 10000 
+    });
     // Step 6: Click product "MacBook Pro"
     await homePage.selectProduct(PRODUCTS.MACBOOK_PRO.name);
 
@@ -72,6 +78,7 @@ test.describe('Shopping Cart Management', () => {
 
     // Step 8: Click [Cart]
     await homePage.navigateToCart();
+    await page.waitForLoadState('networkidle');
 
     // Expected Result 1: Cart page displays 2 products: "Samsung galaxy s6", "MacBook Pro"
     await cartPage.verifyProductInCart(PRODUCTS.SAMSUNG_GALAXY_S6.name);
@@ -100,26 +107,36 @@ test.describe('Shopping Cart Management', () => {
     const { homePage, productDetailPage, cartPage } = authenticatedPage;
 
     await page.goto(BASE_URL);
+    await page.waitForLoadState('networkidle');
+    
     // Precondition: Add 2 products into cart
     // Add Sony xperia z5
     await homePage.selectCategory('Phones');
     // Wait for the product list to load and the specific product to be visible
-    await page.waitForSelector(`//h4[@class="card-title"]//a[contains(text(), "${PRODUCTS.SONY_XPERIA_Z5.name}")]`, { state: 'visible' });
+    await page.waitForSelector(`//h4[@class="card-title"]//a[contains(text(), "${PRODUCTS.SONY_XPERIA_Z5.name}")]`, { 
+      state: 'visible',
+      timeout: 10000 
+    });
     await homePage.selectProduct(PRODUCTS.SONY_XPERIA_Z5.name);
     await productDetailPage.addToCart();
     await homePage.navigateToHome();
-    await page.waitForTimeout(500);
+    await page.waitForLoadState('networkidle');
 
     // Add MacBook Air
     await homePage.selectCategory('Laptops');
+    await page.waitForSelector(`//h4[@class="card-title"]//a[contains(text(), "${PRODUCTS.MACBOOK_AIR.name}")]`, { 
+      state: 'visible',
+      timeout: 10000 
+    });
     await homePage.selectProduct(PRODUCTS.MACBOOK_AIR.name);
     await productDetailPage.addToCart();
 
     await homePage.navigateToHome();
-    await page.waitForTimeout(500);
+    await page.waitForLoadState('networkidle');
+    
     // Step 1: Go to [Cart]
     await homePage.navigateToCart();
-    await page.waitForTimeout(5000);
+    await page.waitForLoadState('networkidle');
 
 
     // Step 2: Verify both items are displayed
