@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test:demo": "npx playwright test ./tests/demo --headed --workers=1 --project=chromium",
+    "test:demo": "npx playwright test ./tests/demo --headed --workers=1 --project=chromium --reporter=allure-playwright",
     "test:cart": "npx playwright test ./tests/demo/cart.spec.ts --headed --workers=1 --project=chromium",
     "test:checkout": "npx playwright test ./tests/demo/checkout.spec.ts --headed --workers=1 --project=chromium",
     "test:navigation": "npx playwright test ./tests/demo/navigation.spec.ts --headed --workers=1 --project=chromium",
@@ -15,6 +15,7 @@
   "description": "",
   "devDependencies": {
     "@playwright/test": "^1.56.1",
-    "@types/node": "^24.9.1"
+    "@types/node": "^24.9.1",
+    "allure-playwright": "^3.4.1"
   }
 }

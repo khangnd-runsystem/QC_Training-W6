@@ -80,7 +80,6 @@ test.describe('Shopping Cart Management', () => {
 
     // Step 8: Click [Cart]
     await homePage.navigateToCart();
-    await cartPage.waitForPageLoad();
 
     // Expected Result 1: Cart page displays 2 products: "Samsung galaxy s6", "MacBook Pro"
     await cartPage.verifyProductInCart(PRODUCTS.SAMSUNG_GALAXY_S6.name);
