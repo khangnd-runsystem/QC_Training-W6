@@ -18,7 +18,7 @@ test.describe('End-to-End Shopping Flow', () => {
     
     // Navigate to base URL
     await page.goto(BASE_URL);
-    await homePage.waitForPageLoad();
+    // await homePage.waitForPageLoad();
     
     // Go to Cart
     await homePage.navigateToCart();
@@ -29,7 +29,7 @@ test.describe('End-to-End Shopping Flow', () => {
     
     // Return to homepage
     await homePage.navigateToHome();
-    await homePage.waitForPageLoad();
+    // await homePage.waitForPageLoad();
   });
   test('TC005 - Complete full shopping flow - from login to logout - entire process works correctly', async ({ 
     page,

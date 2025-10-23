@@ -112,7 +112,7 @@ export class CommonPage {
   async waitForPageLoad(): Promise<void> {
     await this.page.waitForLoadState("domcontentloaded");
     // Small buffer to ensure elements are rendered
-    await this.page.waitForTimeout(3000);
+    await this.page.waitForTimeout(2000);
   }
 
   // Group: Interaction

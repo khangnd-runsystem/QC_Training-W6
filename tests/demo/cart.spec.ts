@@ -15,7 +15,7 @@ test.describe('Shopping Cart Management', () => {
     
     // Navigate to base URL
     await page.goto(BASE_URL);
-    await homePage.waitForPageLoad();
+    // await homePage.waitForPageLoad();
     
     // Go to Cart
     await homePage.navigateToCart();
@@ -26,7 +26,7 @@ test.describe('Shopping Cart Management', () => {
     
     // Return to homepage
     await homePage.navigateToHome();
-    await homePage.waitForPageLoad();
+    // await homePage.waitForPageLoad();
   });
 
   /**
@@ -43,7 +43,7 @@ test.describe('Shopping Cart Management', () => {
     const { homePage, productDetailPage, cartPage } = authenticatedPage;
 
     await page.goto(BASE_URL);
-    await homePage.waitForPageLoad();
+    // await homePage.waitForPageLoad();
 
     // Step 1: From Home page, click category [Phones]
     await homePage.selectCategory('Phones');
@@ -57,12 +57,12 @@ test.describe('Shopping Cart Management', () => {
     await homePage.selectProduct(PRODUCTS.SAMSUNG_GALAXY_S6.name);
 
     // Step 3: Click [Add to cart], accept alert
-    await productDetailPage.waitForPageLoad()
+    // await productDetailPage.waitForPageLoad()
     await productDetailPage.addToCart();
 
     // Step 4: Click [Home] from navbar
     await homePage.navigateToHome();
-    await homePage.waitForPageLoad();
+    // await homePage.waitForPageLoad();
 
     // Step 5: Click category [Laptops]
     await homePage.selectCategory('Laptops');
@@ -74,7 +74,7 @@ test.describe('Shopping Cart Management', () => {
     await homePage.selectProduct(PRODUCTS.MACBOOK_PRO.name);
 
     // Step 7: Click [Add to cart], accept alert
-    await productDetailPage.waitForPageLoad()
+    // await productDetailPage.waitForPageLoad()
     await productDetailPage.addToCart();
     await homePage.navigateToHome();
 
@@ -108,7 +108,7 @@ test.describe('Shopping Cart Management', () => {
     const { homePage, productDetailPage, cartPage } = authenticatedPage;
     
     await page.goto(BASE_URL);
-    await homePage.waitForPageLoad();
+    // await homePage.waitForPageLoad();
     
     // Precondition: Add 2 products into cart
     // Add Sony xperia z5
@@ -121,7 +121,7 @@ test.describe('Shopping Cart Management', () => {
     await homePage.selectProduct(PRODUCTS.SONY_XPERIA_Z5.name);
     await productDetailPage.addToCart();
     await homePage.navigateToHome();
-    await homePage.waitForPageLoad();
+    // await homePage.waitForPageLoad();
 
     // Add MacBook Air
     await homePage.selectCategory('Laptops');
@@ -133,11 +133,11 @@ test.describe('Shopping Cart Management', () => {
     await productDetailPage.addToCart();
 
     await homePage.navigateToHome();
-    await homePage.waitForPageLoad();
+    // await homePage.waitForPageLoad();
     
     // Step 1: Go to [Cart]
     await homePage.navigateToCart();
-    await cartPage.waitForPageLoad();
+    // await cartPage.waitForPageLoad();
 
 
     // Step 2: Verify both items are displayed

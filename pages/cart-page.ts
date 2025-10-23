@@ -23,13 +23,13 @@ export class CartPage extends CommonPage {
   }
 
   async verifyProductInCart(productName: string): Promise<void> {
-    await this.waitForPageLoad();
+    // await this.waitForPageLoad();
     const productLocator = this.locators.getProductNameInCart(productName);
     await expect.soft(productLocator).toBeVisible();
   }
 
   async verifyProductPrice(productName: string, expectedPrice: number): Promise<void> {
-    await this.waitForPageLoad();
+    // await this.waitForPageLoad();
     const priceLocator = this.locators.getProductPriceInCart(productName);
     const priceText = await this.getText(priceLocator);
     const actualPrice = parseFloat(priceText.replace(/[^0-9.]/g, ''));
@@ -48,7 +48,7 @@ export class CartPage extends CommonPage {
   }
 
   async verifyTotalPrice(expectedTotal: number): Promise<void> {
-    await this.waitForPageLoad();
+    // await this.waitForPageLoad();
     const actualTotal = await this.getTotalPrice();
     expect.soft(actualTotal).toBe(expectedTotal);
   }

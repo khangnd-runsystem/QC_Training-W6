@@ -17,7 +17,7 @@ test.describe('Checkout Process', () => {
     
     // Navigate to base URL
     await page.goto(BASE_URL);
-    await homePage.waitForPageLoad();
+    // await homePage.waitForPageLoad();
     
     // Go to Cart
     await homePage.navigateToCart();
@@ -28,7 +28,7 @@ test.describe('Checkout Process', () => {
     
     // Return to homepage
     await homePage.navigateToHome();
-    await homePage.waitForPageLoad();
+    // await homePage.waitForPageLoad();
   });
   test('TC003 - Complete checkout process - when entering valid customer information - order is placed successfully and confirmation is shown', async ({ 
     page,
@@ -37,7 +37,7 @@ test.describe('Checkout Process', () => {
     const { homePage, productDetailPage, cartPage, checkoutPage } = authenticatedPage;
 
     await page.goto(BASE_URL);
-    await homePage.waitForPageLoad();
+    // await homePage.waitForPageLoad();
 
     // Precondition: Add at least 1 product to cart
     await homePage.selectCategory('Phones');
@@ -73,7 +73,7 @@ test.describe('Checkout Process', () => {
     // Expected Result 3: Click [OK] closes popup and redirects to Home page
     await homePage.waitForPageLoad()
     await checkoutPage.closeConfirmation();
-    await homePage.waitForPageLoad()
+    // await homePage.waitForPageLoad()
     expect.soft(BASE_URL).toMatch(/demoblaze\.com/);
 
     // Expected Result 4: Cart is cleared
