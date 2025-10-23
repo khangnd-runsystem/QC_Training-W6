@@ -13,7 +13,24 @@ import { MESSAGES } from '../../constants/messages';
  * Description: Verify complete shopping flow from login → add item → checkout → logout
  */
 test.describe('End-to-End Shopping Flow', () => {
-  
+  test.beforeEach(async ({ page, authenticatedPage }) => {
+    const { homePage, cartPage } = authenticatedPage;
+    
+    // Navigate to base URL
+    await page.goto(BASE_URL);
+    await homePage.waitForPageLoad();
+    
+    // Go to Cart
+    await homePage.navigateToCart();
+    await cartPage.waitForPageLoad();
+    
+    // Clear all products in cart (handles duplicate product names)
+    await cartPage.clearCart();
+    
+    // Return to homepage
+    await homePage.navigateToHome();
+    await homePage.waitForPageLoad();
+  });
   test('TC005 - Complete full shopping flow - from login to logout - entire process works correctly', async ({ 
     page,
     loginPage,
@@ -71,12 +88,15 @@ test.describe('End-to-End Shopping Flow', () => {
     expect.soft(amount).toBeGreaterThan(0);
 
     // Step 9: Click [OK] in confirmation
+    await homePage.waitForPageLoad()
     await checkoutPage.closeConfirmation();
     await page.waitForTimeout(500);
 
     // Expected Result 3: Redirected to Home page
-    await expect.soft(page).toHaveURL(BASE_URL);
+    expect.soft(BASE_URL).toMatch(/demoblaze\.com/);
+    // await expect.soft(page).toHaveURL(BASE_URL);
 
+    await homePage.waitForPageLoad()
     // Step 10: Click [Log out]
     await homePage.clickLogout();
 

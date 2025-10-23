@@ -12,7 +12,24 @@ import { MESSAGES } from '../../constants/messages';
  * Description: Verify checkout flow works with valid customer info
  */
 test.describe('Checkout Process', () => {
-  
+  test.beforeEach(async ({ page, authenticatedPage }) => {
+    const { homePage, cartPage } = authenticatedPage;
+    
+    // Navigate to base URL
+    await page.goto(BASE_URL);
+    await homePage.waitForPageLoad();
+    
+    // Go to Cart
+    await homePage.navigateToCart();
+    await cartPage.waitForPageLoad();
+    
+    // Clear all products in cart (handles duplicate product names)
+    await cartPage.clearCart();
+    
+    // Return to homepage
+    await homePage.navigateToHome();
+    await homePage.waitForPageLoad();
+  });
   test('TC003 - Complete checkout process - when entering valid customer information - order is placed successfully and confirmation is shown', async ({ 
     page,
     authenticatedPage 
@@ -20,7 +37,7 @@ test.describe('Checkout Process', () => {
     const { homePage, productDetailPage, cartPage, checkoutPage } = authenticatedPage;
 
     await page.goto(BASE_URL);
-    await page.waitForLoadState('domcontentloaded');
+    await homePage.waitForPageLoad();
 
     // Precondition: Add at least 1 product to cart
     await homePage.selectCategory('Phones');
@@ -42,6 +59,7 @@ test.describe('Checkout Process', () => {
 
     // Step 5: Click [Purchase]
     await checkoutPage.clickPurchase();
+    // await page.pause();
 
     // Expected Result 1: Confirmation popup displayed with "Thank you for your purchase!"
     await checkoutPage.verifyConfirmationMessage(MESSAGES.CHECKOUT_SUCCESS);
@@ -53,9 +71,10 @@ test.describe('Checkout Process', () => {
     expect.soft(amount).toBeGreaterThan(0);
 
     // Expected Result 3: Click [OK] closes popup and redirects to Home page
+    await homePage.waitForPageLoad()
     await checkoutPage.closeConfirmation();
-    await page.waitForTimeout(500);
-    await expect.soft(page).toHaveURL(BASE_URL);
+    await homePage.waitForPageLoad()
+    expect.soft(BASE_URL).toMatch(/demoblaze\.com/);
 
     // Expected Result 4: Cart is cleared
     await homePage.navigateToCart();

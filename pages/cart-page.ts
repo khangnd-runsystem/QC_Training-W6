@@ -67,7 +67,7 @@ export class CartPage extends CommonPage {
    * This avoids issues with duplicate product names
    */
   async clearCart(): Promise<void> {
-    await this.waitForVisible(this.locators.cartTable);
+    // await this.waitForVisible(this.locators.cartTable);
     const deleteButtons = this.page.locator('//tbody[@id="tbodyid"]//a[contains(text(),"Delete")]');
 
     // Lặp cho đến khi hết nút Delete

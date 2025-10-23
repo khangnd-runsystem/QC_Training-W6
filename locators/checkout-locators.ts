@@ -44,6 +44,6 @@ export class CheckoutLocators extends CommonLocators {
     this.confirmationMessage = this.page.locator('//div[contains(@class, "sweet-alert")]//h2');
     this.orderIdText = this.page.locator('//div[contains(@class, "sweet-alert")]//p');
     this.amountText = this.page.locator('//div[contains(@class, "sweet-alert")]//p');
-    this.confirmOkButton = this.page.locator('//div[contains(@class, "sweet-alert")]//button');
+    this.confirmOkButton = this.page.locator('//div[@class = "sa-confirm-button-container"]//button');
   }
 }

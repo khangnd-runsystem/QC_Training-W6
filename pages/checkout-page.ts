@@ -48,7 +48,6 @@ export class CheckoutPage extends CommonPage {
 
   async closeConfirmation(): Promise<void> {
     await this.click(this.locators.confirmOkButton);
-    await this.waitForHidden(this.locators.confirmationModal);
   }
 
   async completeCheckout(info: CheckoutInfo): Promise<void> {
