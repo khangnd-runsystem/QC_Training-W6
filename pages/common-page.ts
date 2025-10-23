@@ -103,6 +103,18 @@ export class CommonPage {
     await this.page.reload();
   }
 
+  /**
+   * Wait for page to load - DOM ready
+   * Uses domcontentloaded which is faster and more reliable than networkidle
+   * for sites with continuous background requests
+   */
+  @step("Wait for page to fully load")
+  async waitForPageLoad(): Promise<void> {
+    await this.page.waitForLoadState("domcontentloaded");
+    // Small buffer to ensure elements are rendered
+    await this.page.waitForTimeout(3000);
+  }
+
   // Group: Interaction
   /**
    * Click on Locator

@@ -23,13 +23,13 @@ export class CartPage extends CommonPage {
   }
 
   async verifyProductInCart(productName: string): Promise<void> {
-    await this.page.waitForLoadState('networkidle');
+    await this.waitForPageLoad();
     const productLocator = this.locators.getProductNameInCart(productName);
     await expect.soft(productLocator).toBeVisible();
   }
 
   async verifyProductPrice(productName: string, expectedPrice: number): Promise<void> {
-    await this.page.waitForLoadState('networkidle');
+    await this.waitForPageLoad();
     const priceLocator = this.locators.getProductPriceInCart(productName);
     const priceText = await this.getText(priceLocator);
     const actualPrice = parseFloat(priceText.replace(/[^0-9.]/g, ''));
@@ -39,7 +39,7 @@ export class CartPage extends CommonPage {
   async removeProduct(productName: string): Promise<void> {
     const deleteButton = this.locators.getDeleteButton(productName);
     await this.click(deleteButton);
-    await this.page.waitForLoadState('networkidle');
+    await this.waitForPageLoad();
   }
 
   async getTotalPrice(): Promise<number> {
@@ -48,7 +48,7 @@ export class CartPage extends CommonPage {
   }
 
   async verifyTotalPrice(expectedTotal: number): Promise<void> {
-    await this.page.waitForLoadState('networkidle');
+    await this.waitForPageLoad();
     const actualTotal = await this.getTotalPrice();
     expect.soft(actualTotal).toBe(expectedTotal);
   }
@@ -67,15 +67,17 @@ export class CartPage extends CommonPage {
    * This avoids issues with duplicate product names
    */
   async clearCart(): Promise<void> {
-    await this.page.waitForLoadState('networkidle');
+    await this.waitForVisible(this.locators.cartTable);
+    const deleteButtons = this.page.locator('//tbody[@id="tbodyid"]//a[contains(text(),"Delete")]');
 
-    let itemCount = await this.count(this.locators.cartRow);
-    
-    while (itemCount > 0) {
-      const firstDeleteButton = this.locators.getFirstDeleteButton();
-      await this.click(firstDeleteButton);
-      await this.page.waitForLoadState('networkidle');
-      itemCount = await this.count(this.locators.cartRow);
+    // Lặp cho đến khi hết nút Delete
+    while (await deleteButtons.count() > 0) {
+      const before = await deleteButtons.count();
+      await deleteButtons.first().click();
+
+      // Đợi điều kiện thật: số lượng giảm 1
+      await expect(deleteButtons).toHaveCount(before - 1);
     }
   }
+    
 }

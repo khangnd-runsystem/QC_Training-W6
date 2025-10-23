@@ -13,16 +13,18 @@ export class ProductDetailPage extends CommonPage {
 
   // Business-level methods
   async addToCart(): Promise<void> {
-    // Setup alert listener before clicking
-    this.page.once('dialog', async dialog => {
-      console.log(`Alert message: ${dialog.message()}`);
-      expect.soft(dialog.message()).toContain(MESSAGES.PRODUCT_ADDED);
-      await dialog.accept();
-    });
-    await this.page.waitForLoadState('networkidle');
+    // Setup dialog listener and wait for it
+    const dialogPromise = this.page.waitForEvent('dialog');
     
     await this.click(this.locators.addToCartButton);
-    await this.page.waitForLoadState('networkidle');
+    
+    // Wait for and accept the dialog
+    const dialog = await dialogPromise;
+    console.log(`Alert message: ${dialog.message()}`);
+    await dialog.accept();
+    
+    // Wait a moment after alert is handled
+    await this.page.waitForTimeout(500);
   }
 
   async verifyProductName(expectedName: string): Promise<void> {

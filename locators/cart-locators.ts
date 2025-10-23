@@ -24,19 +24,19 @@ export class CartLocators extends CommonLocators {
 
   // Dynamic locator methods
   getProductNameInCart(productName: string): Locator {
-    return this.page.locator(`//tbody[@id="tbodyid"]//tr[contains(., "${productName}")]//td[2]`);
+    return this.page.locator(`//tbody[@id="tbodyid"]//tr[contains(., "${productName}")]//td[2]`).first();
   }
 
   getProductPriceInCart(productName: string): Locator {
-    return this.page.locator(`//tbody[@id="tbodyid"]//tr[contains(., "${productName}")]//td[3]`);
+    return this.page.locator(`//tbody[@id="tbodyid"]//tr[contains(., "${productName}")]//td[3]`).first();
   }
 
   getDeleteButton(productName: string): Locator {
-    return this.page.locator(`//tbody[@id="tbodyid"]//td[text() = "${productName}"]//following-sibling::td//a[text() = 'Delete']`);
+    return this.page.locator(`//tbody[@id="tbodyid"]//td[text() = "${productName}"]//following-sibling::td//a[text() = 'Delete']`).first();
   }
 
   // Get first delete button in cart (for clearing cart without knowing product names)
   getFirstDeleteButton(): Locator {
-    return this.page.locator('//tbody[@id="tbodyid"]//tr[1]//a[text() = "Delete"]');
+    return this.page.locator('//tbody[@id="tbodyid"]//tr[1]//a[text() = "Delete"]').first();
   }
 }

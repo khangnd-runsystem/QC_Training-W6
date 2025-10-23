@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "npx playwright test ./tests/demo --headed --workers=4 --project=chromium",
+    "test:demo": "npx playwright test ./tests/demo --headed --workers=1 --project=chromium",
+    "test:cart": "npx playwright test ./tests/demo/cart.spec.ts --headed --workers=1 --project=chromium",
     "allure:generate": "allure generate allure-results -o ./reports/allure-report --clean",
     "allure:open": "allure open reports/allure-report"
   },
