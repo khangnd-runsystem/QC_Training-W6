@@ -34,9 +34,4 @@ export class HomeLocators extends CommonLocators {
     this.categoryLaptops = this.page.locator('//a[contains(text(), "Laptops")]');
     this.categoryMonitors = this.page.locator('//a[contains(text(), "Monitors")]');
   }
-
-  // Dynamic locator methods
-  getProductCard(productName: string): Locator {
-    return this.page.locator(`//h4[@class="card-title"]//a[contains(text(), "${productName}")]`);
-  }
 }

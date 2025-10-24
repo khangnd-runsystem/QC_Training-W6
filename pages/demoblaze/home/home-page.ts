@@ -1,4 +1,4 @@
-import { expect, Page } from "@playwright/test";
+import { expect, Page, Locator } from "@playwright/test";
 import { CommonPage } from "../../common-page";
 import { HomeLocators } from "../../../locators/home-locators";
 
@@ -8,6 +8,11 @@ export class HomePage extends CommonPage {
   constructor(page: Page) {
     super(page);
     this.locators = new HomeLocators(page);
+  }
+
+  // Dynamic locator methods
+  private getProductCard(productName: string): Locator {
+    return this.page.locator(`//h4[@class="card-title"]//a[contains(text(), "${productName}")]`);
   }
 
   // Business-level methods
@@ -30,7 +35,7 @@ export class HomePage extends CommonPage {
   }
 
   async selectProduct(productName: string): Promise<void> {
-    const productLocator = this.locators.getProductCard(productName);
+    const productLocator = this.getProductCard(productName);
     // Use a longer timeout for product cards to appear after category selection
     await productLocator.waitFor({ state: 'visible', timeout: 30000 });
     await this.click(productLocator);

@@ -1,4 +1,4 @@
-import { expect, Page } from "@playwright/test";
+import { expect, Page, Locator } from "@playwright/test";
 import { CommonPage } from "../../common-page";
 import { CartLocators } from "../../../locators/cart-locators";
 
@@ -8,6 +8,19 @@ export class CartPage extends CommonPage {
   constructor(page: Page) {
     super(page);
     this.locators = new CartLocators(page);
+  }
+
+  // Dynamic locator methods
+  private getProductNameInCart(productName: string): Locator {
+    return this.page.locator(`//tbody[@id="tbodyid"]//tr[contains(., "${productName}")]//td[2]`).first();
+  }
+
+  private getProductPriceInCart(productName: string): Locator {
+    return this.page.locator(`//tbody[@id="tbodyid"]//tr[contains(., "${productName}")]//td[3]`).first();
+  }
+
+  private getDeleteButton(productName: string): Locator {
+    return this.page.locator(`//tbody[@id="tbodyid"]//td[text() = "${productName}"]//following-sibling::td//a[text() = 'Delete']`).first();
   }
 
   // Business-level methods
@@ -24,20 +37,20 @@ export class CartPage extends CommonPage {
 
   async verifyProductInCart(productName: string): Promise<void> {
     // await this.waitForPageLoad();
-    const productLocator = this.locators.getProductNameInCart(productName);
+    const productLocator = this.getProductNameInCart(productName);
     await expect.soft(productLocator).toBeVisible();
   }
 
   async verifyProductPrice(productName: string, expectedPrice: number): Promise<void> {
     // await this.waitForPageLoad();
-    const priceLocator = this.locators.getProductPriceInCart(productName);
+    const priceLocator = this.getProductPriceInCart(productName);
     const priceText = await this.getText(priceLocator);
     const actualPrice = parseFloat(priceText.replace(/[^0-9.]/g, ''));
     expect.soft(actualPrice).toBe(expectedPrice);
   }
 
   async removeProduct(productName: string): Promise<void> {
-    const deleteButton = this.locators.getDeleteButton(productName);
+    const deleteButton = this.getDeleteButton(productName);
     await this.click(deleteButton);
     await this.waitForPageLoad();
   }
