@@ -1,7 +1,7 @@
 import { expect, Page } from "@playwright/test";
-import { CommonPage } from "./common-page";
-import { ProductDetailLocators } from "../locators/product-detail-locators";
-import { MESSAGES } from "../constants/messages";
+import { CommonPage } from "../../common-page";
+import { ProductDetailLocators } from "../../../locators/product-detail-locators";
+import { MESSAGES } from "../../../constants/messages";
 
 export class ProductDetailPage extends CommonPage {
   readonly locators: ProductDetailLocators;

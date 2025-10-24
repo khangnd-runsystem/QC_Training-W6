@@ -1,8 +1,8 @@
 import { expect, Page } from "@playwright/test";
-import { CommonPage } from "./common-page";
-import { CheckoutLocators } from "../locators/checkout-locators";
-import { CheckoutInfo } from "../interfaces/checkout-info";
-import { MESSAGES } from "../constants/messages";
+import { CommonPage } from "../../common-page";
+import { CheckoutLocators } from "../../../locators/checkout-locators";
+import { CheckoutData } from "../../../interfaces/checkout-data";
+import { MESSAGES } from "../../../constants/messages";
 
 export class CheckoutPage extends CommonPage {
   readonly locators: CheckoutLocators;

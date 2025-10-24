@@ -1,7 +1,7 @@
 import { expect, Page } from "@playwright/test";
-import { CommonPage } from "./common-page";
-import { LoginLocators } from "../locators/login-locators";
-import { LoginCredentials } from "../interfaces/login-credentials";
+import { CommonPage } from "../../common-page";
+import { LoginLocators } from "../../../locators/login-locators";
+import { LoginCredentials } from "../../../interfaces/login-credentials";
 
 export class LoginPage extends CommonPage {
   readonly locators: LoginLocators;

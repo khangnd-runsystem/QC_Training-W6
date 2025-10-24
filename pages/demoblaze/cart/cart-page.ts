@@ -1,6 +1,6 @@
 import { expect, Page } from "@playwright/test";
-import { CommonPage } from "./common-page";
-import { CartLocators } from "../locators/cart-locators";
+import { CommonPage } from "../../common-page";
+import { CartLocators } from "../../../locators/cart-locators";
 
 export class CartPage extends CommonPage {
   readonly locators: CartLocators;
