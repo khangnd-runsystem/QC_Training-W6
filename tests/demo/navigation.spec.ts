@@ -82,10 +82,7 @@ test.describe('End-to-End Shopping Flow', () => {
 
     // Expected Result 2: Checkout completed successfully with confirmation message & order details
     await checkoutPage.verifyConfirmationMessage(MESSAGES.CHECKOUT_SUCCESS);
-    const orderId = await checkoutPage.getOrderId();
-    const amount = await checkoutPage.getOrderAmount();
-    expect.soft(orderId).toBeTruthy();
-    expect.soft(amount).toBeGreaterThan(0);
+    await checkoutPage.verifyOrderConfirmation();
 
     // Step 9: Click [OK] in confirmation
     await homePage.waitForPageLoad()
@@ -93,8 +90,7 @@ test.describe('End-to-End Shopping Flow', () => {
     await page.waitForTimeout(500);
 
     // Expected Result 3: Redirected to Home page
-    expect.soft(BASE_URL).toMatch(/demoblaze\.com/);
-    // await expect.soft(page).toHaveURL(BASE_URL);
+    await homePage.verifyOnHomePage();
 
     await homePage.waitForPageLoad()
     // Step 10: Click [Log out]

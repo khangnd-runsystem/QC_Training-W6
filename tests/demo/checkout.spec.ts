@@ -65,16 +65,13 @@ test.describe('Checkout Process', () => {
     await checkoutPage.verifyConfirmationMessage(MESSAGES.CHECKOUT_SUCCESS);
 
     // Expected Result 2: Display Order ID and Amount
-    const orderId = await checkoutPage.getOrderId();
-    const amount = await checkoutPage.getOrderAmount();
-    expect.soft(orderId).toBeTruthy();
-    expect.soft(amount).toBeGreaterThan(0);
+    await checkoutPage.verifyOrderConfirmation();
 
     // Expected Result 3: Click [OK] closes popup and redirects to Home page
     await homePage.waitForPageLoad()
     await checkoutPage.closeConfirmation();
     // await homePage.waitForPageLoad()
-    expect.soft(BASE_URL).toMatch(/demoblaze\.com/);
+    await homePage.verifyOnHomePage();
 
     // Expected Result 4: Cart is cleared
     await homePage.navigateToCart();

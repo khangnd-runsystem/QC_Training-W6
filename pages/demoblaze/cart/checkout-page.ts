@@ -32,14 +32,33 @@ export class CheckoutPage extends CommonPage {
     await expect.soft(this.locators.confirmationMessage).toContainText(expectedMessage);
   }
 
-  async getOrderId(): Promise<string> {
+  async verifyOrderIdExists(): Promise<void> {
+    const orderText = await this.getText(this.locators.orderIdText);
+    const match = orderText.match(/Id:\s*(\d+)/);
+    const orderId = match ? match[1] : '';
+    expect.soft(orderId).toBeTruthy();
+  }
+
+  async verifyOrderAmountExists(): Promise<void> {
+    const amountText = await this.getText(this.locators.amountText);
+    const match = amountText.match(/Amount:\s*(\d+)/);
+    const amount = match ? parseFloat(match[1]) : 0;
+    expect.soft(amount).toBeGreaterThan(0);
+  }
+
+  async verifyOrderConfirmation(): Promise<void> {
+    await this.verifyOrderIdExists();
+    await this.verifyOrderAmountExists();
+  }
+
+  private async getOrderId(): Promise<string> {
     const orderText = await this.getText(this.locators.orderIdText);
     // Extract order ID from text (e.g., "Id: 12345")
     const match = orderText.match(/Id:\s*(\d+)/);
     return match ? match[1] : '';
   }
 
-  async getOrderAmount(): Promise<number> {
+  private async getOrderAmount(): Promise<number> {
     const amountText = await this.getText(this.locators.amountText);
     // Extract amount from text (e.g., "Amount: 1460 USD")
     const match = amountText.match(/Amount:\s*(\d+)/);

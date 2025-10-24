@@ -56,4 +56,8 @@ export class HomePage extends CommonPage {
   async verifyWelcomeMessage(username: string): Promise<void> {
     await expect.soft(this.locators.welcomeMessage).toContainText(`Welcome ${username}`);
   }
+
+  async verifyOnHomePage(): Promise<void> {
+    await expect.soft(this.page).toHaveURL(/demoblaze\.com/);
+  }
 }

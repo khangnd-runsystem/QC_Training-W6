@@ -24,7 +24,7 @@ export class CartPage extends CommonPage {
   }
 
   // Business-level methods
-  async getCartItems(): Promise<string[]> {
+  private async getCartItems(): Promise<string[]> {
     const rows = await this.locators.cartRow.all();
     const items: string[] = [];
     for (const row of rows) {
@@ -55,7 +55,7 @@ export class CartPage extends CommonPage {
     await this.waitForPageLoad();
   }
 
-  async getTotalPrice(): Promise<number> {
+  private async getTotalPrice(): Promise<number> {
     const totalText = await this.getText(this.locators.totalPrice);
     return parseFloat(totalText.replace(/[^0-9.]/g, ''));
   }
@@ -73,6 +73,28 @@ export class CartPage extends CommonPage {
   async verifyCartEmpty(): Promise<void> {
     const rowCount = await this.count(this.locators.cartRow);
     expect.soft(rowCount).toBe(0);
+  }
+
+  /**
+   * Verify that a specific product is NOT in the cart
+   */
+  async verifyProductNotInCart(productName: string): Promise<void> {
+    const rows = await this.locators.cartRow.all();
+    const items: string[] = [];
+    for (const row of rows) {
+      const nameCell = row.locator('td:nth-child(2)');
+      const name = await nameCell.textContent();
+      if (name) items.push(name.trim());
+    }
+    expect.soft(items).not.toContain(productName);
+  }
+
+  /**
+   * Verify the number of products in cart
+   */
+  async verifyCartItemCount(expectedCount: number): Promise<void> {
+    const rowCount = await this.count(this.locators.cartRow);
+    expect.soft(rowCount).toBe(expectedCount);
   }
 
   /**

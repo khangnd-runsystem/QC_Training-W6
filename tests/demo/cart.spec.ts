@@ -114,10 +114,10 @@ test.describe('Shopping Cart Management', () => {
     // Add Sony xperia z5
     await homePage.selectCategory('Phones');
     // Wait for the product list to load and the specific product to be visible
-    await page.waitForSelector(`//h4[@class="card-title"]//a[contains(text(), "${PRODUCTS.SONY_XPERIA_Z5.name}")]`, { 
-      state: 'visible',
-      timeout: 10000 
-    });
+    // await page.waitForSelector(`//h4[@class="card-title"]//a[contains(text(), "${PRODUCTS.SONY_XPERIA_Z5.name}")]`, { 
+    //   state: 'visible',
+    //   timeout: 10000 
+    // });
     await homePage.selectProduct(PRODUCTS.SONY_XPERIA_Z5.name);
     await productDetailPage.addToCart();
     await homePage.navigateToHome();
@@ -125,10 +125,10 @@ test.describe('Shopping Cart Management', () => {
 
     // Add MacBook Air
     await homePage.selectCategory('Laptops');
-    await page.waitForSelector(`//h4[@class="card-title"]//a[contains(text(), "${PRODUCTS.MACBOOK_AIR.name}")]`, { 
-      state: 'visible',
-      timeout: 10000 
-    });
+    // await page.waitForSelector(`//h4[@class="card-title"]//a[contains(text(), "${PRODUCTS.MACBOOK_AIR.name}")]`, { 
+    //   state: 'visible',
+    //   timeout: 10000 
+    // });
     await homePage.selectProduct(PRODUCTS.MACBOOK_AIR.name);
     await productDetailPage.addToCart();
 
@@ -149,8 +149,7 @@ test.describe('Shopping Cart Management', () => {
 
     // Step 4: Observe cart
     // Expected Result 1: "Sony xperia z5" removed from cart
-    const items = await cartPage.getCartItems();
-    expect.soft(items).not.toContain(PRODUCTS.SONY_XPERIA_Z5.name);
+    await cartPage.verifyProductNotInCart(PRODUCTS.SONY_XPERIA_Z5.name);
 
     // Expected Result 2: Only "MacBook Air" remains
     await cartPage.verifyProductInCart(PRODUCTS.MACBOOK_AIR.name);
