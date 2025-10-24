@@ -48,10 +48,10 @@ test.describe('Shopping Cart Management', () => {
     // Step 1: From Home page, click category [Phones]
     await homePage.selectCategory('Phones');
     // Wait for the product list to load and the specific product to be visible
-    await page.waitForSelector(`//h4[@class="card-title"]//a[contains(text(), "${PRODUCTS.SAMSUNG_GALAXY_S6.name}")]`, { 
-      state: 'visible',
-      timeout: 10000 
-    });
+    // await page.waitForSelector(`//h4[@class="card-title"]//a[contains(text(), "${PRODUCTS.SAMSUNG_GALAXY_S6.name}")]`, { 
+    //   state: 'visible',
+    //   timeout: 10000 
+    // });
 
     // Step 2: Click product "Samsung galaxy s6"
     await homePage.selectProduct(PRODUCTS.SAMSUNG_GALAXY_S6.name);
@@ -66,10 +66,10 @@ test.describe('Shopping Cart Management', () => {
 
     // Step 5: Click category [Laptops]
     await homePage.selectCategory('Laptops');
-    await page.waitForSelector(`//h4[@class="card-title"]//a[contains(text(), "${PRODUCTS.MACBOOK_PRO.name}")]`, { 
-      state: 'visible',
-      timeout: 10000 
-    });
+    // await page.waitForSelector(`//h4[@class="card-title"]//a[contains(text(), "${PRODUCTS.MACBOOK_PRO.name}")]`, { 
+    //   state: 'visible',
+    //   timeout: 10000 
+    // });
     // Step 6: Click product "MacBook Pro"
     await homePage.selectProduct(PRODUCTS.MACBOOK_PRO.name);
 
